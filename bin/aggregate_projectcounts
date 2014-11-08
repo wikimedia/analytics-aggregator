@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Aggregates Wikimedia's hourly projectcount files into daily per project files
+
+Usage: aggregate_projectcounts [--source SOURCE_DIR] [--target TARGET_DIR]
+           [--first-date FIRST_DATE] [--last-date LAST_DATE] [--date DATE]
+           [-v ...] [--help]
+
+Options:
+    -h, --help               Show this help message and exit.
+
+    --source SOURCE_DIR      Read hourly projectcount files from SOURCE_DIR.
+                             [default: /mnt/hdfs/wmf/data/archive/webstats]
+    --target TARGET_DIR      Write daily aggregated CSV files into TARGET_DIR
+                             [default: ./data]
+
+    --first-date FIRST_DATE  First day to aggregate for
+                             [default: 2014-09-23]
+    --last-date LAST_DATE    Last day to aggregate for
+                             [default: yesterday]
+    --date DATE              Day to aggregate for (overrides --first-date, and
+                             --last-date)
+
+    -v, --verbose            Increase verbosity
+"""
+
+# Add parent directory to python path to allow allow loading of modules without
+# messing PYTHONPATH on the command line
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+from docopt import docopt
+
+import logging
+
+import aggregator
+
+if __name__ == '__main__':
+    arguments = docopt(__doc__)
+
+    # Setting up logging
+    log_level_map = {
+        1: logging.WARNING,
+        2: logging.INFO,
+        3: logging.DEBUG,
+        }
+    verbosity = min(arguments['--verbose'], 3)  # cap at 3, to allow many "-v"
+    log_level = log_level_map.get(verbosity, logging.ERROR)
+    logging.basicConfig(level=log_level,
+                        format='%(asctime)s %(levelname)-6s %(message)s',
+                        datefmt='%Y-%m-%dT%H:%M:%S')
+
+    logging.debug("Parsed arguments: %s" % (arguments))
+
+    all_parameters_ok = True
+
+    # Setting up directories
+    source_dir_abs = arguments['--source']
+    try:
+        source_dir_abs = aggregator.existing_dir_abs(source_dir_abs)
+    except ValueError:
+        all_parameters_ok = False
+        logging.error("Source directory '%s' does not point to an existing "
+                      "directory" % (source_dir_abs))
+
+    target_dir_abs = arguments['--target']
+    try:
+        target_dir_abs = aggregator.existing_dir_abs(target_dir_abs)
+    except ValueError:
+        all_parameters_ok = False
+        logging.error("Target directory '%s' does not point to an existing "
+                      "directory" % (target_dir_abs))
+
+    # Setting up date parameters
+    if arguments['--date']:
+        arguments['--first-date'] = arguments['--date']
+        arguments['--last-date'] = arguments['--date']
+
+    first_date = arguments['--first-date']
+    try:
+        first_date = aggregator.parse_string_to_date(first_date)
+    except ValueError:
+        all_parameters_ok = False
+        logging.error("Could not parse first date '%s' to date" % (first_date))
+
+    last_date = arguments['--last-date']
+    try:
+        last_date = aggregator.parse_string_to_date(last_date)
+    except ValueError:
+        all_parameters_ok = False
+        logging.error("Could not parse last date '%s' to date" % (last_date))
+    if all_parameters_ok and first_date > last_date:
+        all_parameters_ok = False
+        logging.error("first_date '%s' is not before last_date '%s'" %
+                      (first_date, last_date))
+
+    if not all_parameters_ok:
+        logging.error("Parameters could not get parsed")
+        sys.exit(1)
+
+    aggregator.update_daily_per_project_csvs(
+        source_dir_abs,
+        target_dir_abs,
+        first_date,
+        last_date
+    )

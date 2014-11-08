@@ -1,0 +1,191 @@
+# -*- coding: utf-8 -*-
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+    aggregator.projectcounts
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    This module contains functions to aggregate Wikimedia's
+    projectcount files.
+"""
+
+
+import logging
+import datetime
+import os
+import glob
+import util
+
+PROJECTCOUNTS_STRFTIME_PATTERN = ('%%Y%s%%Y-%%m%sprojectcounts-%%Y%%m%%d-'
+                                  '%%H0000' % (os.sep, os.sep))
+
+cache = {}
+
+
+def clear_cache():
+    global cache
+    logging.debug("Clearing projectcounts cache")
+    cache = {}
+
+
+def aggregate_for_date(source_dir_abs, date):
+    """Aggregates hourly projectcounts for a given day.
+
+    This function does not attempt to cache the aggregated data. Either cache
+    yourself, or is helper methods that cache, as
+    get_hourly_count_for_webstatscollector_abbreviation.
+
+    If one of the required 24 hourly files do not exist, cannot be read, or
+    some other issue occurs, a RuntimeError is raised.
+
+    The returned dictonary is keyed by the lowercase webstatscollector
+    abbreviation, and values are the total counts for this day.
+
+    :param source_dir_abs: Absolute directory to read the hourly projectcounts
+        files from.
+    :param date: The date to get the count for.
+    """
+    daily_data = {}
+
+    for hour in range(24):
+        # Initialize with the relevant hour start ...
+        hourly_file_datetime = datetime.datetime(date.year, date.month,
+                                                 date.day, hour)
+        # and add another hour since webstatscollector uses the interval end in
+        # the file name :-(
+        hourly_file_datetime += datetime.timedelta(hours=1)
+
+        hourly_file_abs = os.path.join(
+            source_dir_abs,
+            hourly_file_datetime.strftime(PROJECTCOUNTS_STRFTIME_PATTERN))
+
+        if not os.path.isfile(hourly_file_abs):
+            raise RuntimeError("'%s' is not an existing file" % (
+                hourly_file_abs))
+
+        logging.debug("Reading %s" % (hourly_file_abs))
+
+        with open(hourly_file_abs, 'r') as hourly_file:
+            for line in hourly_file:
+                fields = line.split(' ')
+
+                if len(fields) != 4:
+                    raise RuntimeError("Malformed line in '%s'" % (
+                        hourly_file))
+
+                abbreviation = fields[0].lower()
+                count = int(fields[2])
+
+                daily_data[abbreviation] = daily_data.get(abbreviation, 0) \
+                    + count
+
+    return daily_data
+
+
+def get_daily_count(source_dir_abs, webstatscollector_abbreviation, date):
+    """Obtains the daily count for a webstatscollector abbreviation.
+
+    Data gets cached upon read. For a day, the data is <50KB, so having many
+    dates in cache is not resource intensive.
+
+    :param source_dir_abs: Absolute directory to read the hourly projectcounts
+        files from.
+    :param webstatscollector_abbreviation: The webstatscollector abbreviation
+        to get the count for
+    :param date: The date to get the count for.
+    """
+    global cache
+    try:
+        source_dir_cache = cache[source_dir_abs]
+    except KeyError:
+        source_dir_cache = {}
+        cache[source_dir_abs] = source_dir_cache
+
+    try:
+        date_data = source_dir_cache[date]
+    except KeyError:
+        date_data = aggregate_for_date(source_dir_abs, date)
+        source_dir_cache[date] = date_data
+
+    return date_data.get(webstatscollector_abbreviation, 0)
+
+
+def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
+                                  last_date):
+    """Updates daily per project CSVs from hourly projectcounts files.
+
+    The existing per project CSV files in target_dir_abs are updated with daily
+    data from first_date up to (and including) last_date.
+
+    If a CSVs already has data for a given day, it is not recomputed.
+
+    Upon any error, the function raises an exception without cleaning or
+    syncing up the CSVs. So if the first CSV could get updated, but there are
+    issues with the second, the data written to the first CSV survives. Hence,
+    the CSVs need not end with the same date upon error.
+
+    :param source_dir_abs: Absolute directory to read the hourly projectcounts
+        files from.
+    :param target_dir_abs: Absolute directory of the per project CSVs.
+    :param first_date: The first date to compute non-existing data for.
+    :param last_date: The last date to compute non-existing data for.
+    """
+    for csv_file_abs in glob.glob(os.path.join(target_dir_abs, '*.csv')):
+        logging.info("Updating csv '%s'" % (csv_file_abs))
+
+        csv_data = {}
+
+        dbname = os.path.basename(csv_file_abs)
+        dbname = dbname.rsplit('.csv', 1)[0]
+
+        with open(csv_file_abs, 'r') as csv_file:
+            for line in csv_file:
+                date_str = line.split(',')[0]
+                if date_str in csv_data:
+                    raise RuntimeError(
+                        "CSV contains the date '%s' twice" % (date_str))
+                csv_data[date_str] = line.strip() + '\n'
+
+        for date in util.generate_dates(first_date, last_date):
+            date_str = date.isoformat()
+            logging.debug("Updating csv '%s' for date '%s'" % (
+                dbname, str(date)))
+            if date_str not in csv_data:
+                # desktop site
+                abbreviation = util.dbname_to_webstatscollector_abbreviation(
+                    dbname, 'desktop')
+                count_desktop = get_daily_count(
+                    source_dir_abs, abbreviation, date)
+
+                # mobile site
+                abbreviation = util.dbname_to_webstatscollector_abbreviation(
+                    dbname, 'mobile')
+                count_mobile = get_daily_count(
+                    source_dir_abs, abbreviation, date)
+
+                # zero site
+                abbreviation = util.dbname_to_webstatscollector_abbreviation(
+                    dbname, 'zero')
+                count_zero = get_daily_count(
+                    source_dir_abs, abbreviation, date)
+
+                # injecting obtained data
+                csv_data[date_str] = '%s,%d,%d,%d\n' % (
+                    date_str,
+                    count_desktop,
+                    count_mobile,
+                    count_zero)
+
+        with open(csv_file_abs, 'w') as csv_file:
+            csv_file.writelines(sorted(csv_data.itervalues()))
