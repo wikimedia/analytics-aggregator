@@ -189,3 +189,101 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
 
         with open(csv_file_abs, 'w') as csv_file:
             csv_file.writelines(sorted(csv_data.itervalues()))
+
+
+def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
+    """Gets a list of obvious validity issues of aggregated projectcount CSVs
+
+    :param data_dir_abs: Absolute directory of the per project CSVs.
+    """
+    issues = []
+    dbnames = []
+
+    big_wikis = [
+        'enwiki',
+        'jawiki',
+        'dewiki',
+        'eswiki',
+        'frwiki',
+        'ruwiki',
+        'itwiki',
+        ]
+
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    for csv_file_abs in sorted(glob.glob(os.path.join(data_dir_abs, '*.csv'))):
+        logging.info("Checking csv '%s'" % (csv_file_abs))
+
+        dbname = os.path.basename(csv_file_abs)
+        dbname = dbname.rsplit('.csv', 1)[0]
+        dbnames.append(dbname)
+
+        with open(csv_file_abs, 'r') as file:
+            lines = file.readlines()
+
+            if len(lines):
+                # Analyze last line
+                last_line = (lines[-1]).split('\n', 1)[0]
+                last_line_split = last_line.split(',')
+                if len(last_line_split) == 4:
+                    # Check if last line is not older than yesterday
+                    try:
+                        last_line_date = util.parse_string_to_date(
+                            last_line_split[0])
+                        if last_line_date < yesterday:
+                            issues.append("Last line of %s is too old "
+                                          "'%s'" % (csv_file_abs, last_line))
+                    except ValueError:
+                        issues.append("Last line of %s is too old "
+                                      "'%s'" % (csv_file_abs, last_line))
+
+                    if dbname in big_wikis:
+                        # Check desktop count
+                        try:
+                            if int(last_line_split[1]) < 1000000:
+                                issues.append("Desktop count of last line of "
+                                              "%s is too low '%s'" % (
+                                                  csv_file_abs, last_line))
+                        except ValueError:
+                            issues.append("Desktop count of last line of %s is"
+                                          "not an integer '%s'" % (
+                                              csv_file_abs, last_line))
+
+                        # Check mobile count
+                        try:
+                            if int(last_line_split[2]) < 10000:
+                                issues.append("Desktop count of last line of "
+                                              "%s is too low '%s'" % (
+                                                  csv_file_abs, last_line))
+                        except ValueError:
+                            issues.append("Mobile count of last line of %s is"
+                                          "not an integer '%s'" % (
+                                              csv_file_abs, last_line))
+
+                        # Check zero count
+                        try:
+                            if int(last_line_split[3]) < 100:
+                                issues.append("Zero count of last line of "
+                                              "%s is too low '%s'" % (
+                                                  csv_file_abs, last_line))
+                        except ValueError:
+                            issues.append("Desktop count of last line of %s is"
+                                          "not an integer '%s'" % (
+                                              csv_file_abs, last_line))
+
+                else:
+                    issues.append("Last line of %s does not have 4 columns: "
+                                  "'%s'" % (csv_file_abs, last_line))
+            else:
+                issues.append("No lines for %s" % csv_file_abs)
+
+    if not len(dbnames):
+        issues.append("Could not find any CSVs")
+
+    if set(big_wikis) - set(dbnames):
+        issues.append("Not all big wikis covered (Missing: %s)" % (
+            [x for x in (set(big_wikis) - set(dbnames))]))
+
+    if not (set(dbnames) - set(big_wikis)):
+        issues.append("No wikis beyond the big wikis")
+
+    return sorted(issues)

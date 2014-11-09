@@ -56,6 +56,25 @@ class ProjectcountsTestCase(unittest.TestCase):
             for line in lines:
                 file.write(line + '\n')
 
+    def create_valid_aggregated_projects(self, tmp_dir_abs):
+        today = datetime.date.today()
+        for dbname in [
+            'enwiki',
+            'jawiki',
+            'dewiki',
+            'eswiki',
+            'frwiki',
+            'ruwiki',
+            'itwiki',
+            'foo',
+        ]:
+            csv_file_abs = os.path.join(tmp_dir_abs, dbname + '.csv')
+            with open(csv_file_abs, 'w') as file:
+                for day_offset in range(-10, 0):
+                    date = (today + datetime.timedelta(days=day_offset))
+                    date_str = date.isoformat()
+                    file.write('%s,123456789,12345678,1234567\n' % (date_str))
+
     def assert_file_content_equals(self, actual_file_abs, expected_lines):
         with open(actual_file_abs, 'r') as file:
             for expected_line in expected_lines:
@@ -371,3 +390,141 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-02,48276,0,0',
             '2014-11-03,72276,0,0',
             ])
+
+    def test_validity_no_csvs(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as no csvs could get found
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_no_enwiki(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        os.unlink(enwiki_file_abs)
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as enwiki.csv is missing
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_only_big_wikis(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        foo_file_abs = os.path.join(tmp_dir_abs, 'foo.csv')
+        os.unlink(foo_file_abs)
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as no csvs for other wikis than the big wikis are
+        # present.
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_enwiki_empty(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        self.create_empty_file(enwiki_file_abs)
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as enwiki has no reading
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_enwiki_no_today(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        yesterday = aggregator.parse_string_to_date('yesterday')
+        with open(enwiki_file_abs, 'w') as file:
+            for day_offset in range(-10, 0):
+                date = (yesterday + datetime.timedelta(days=day_offset))
+                date_str = date.isoformat()
+                file.write('%s,123456789,12345678,1234567\n' % (date_str))
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as enwiki has no reading for today
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_enwiki_too_low_desktop(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        today = datetime.date.today()
+        with open(enwiki_file_abs, 'w') as file:
+            for day_offset in range(-10, 0):
+                date = (today + datetime.timedelta(days=day_offset))
+                date_str = date.isoformat()
+                file.write('%s,0,12345678,1234567\n' % (date_str))
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as enwiki has no reading for today
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_enwiki_too_low_mobile(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        today = datetime.date.today()
+        with open(enwiki_file_abs, 'w') as file:
+            for day_offset in range(-10, 0):
+                date = (today + datetime.timedelta(days=day_offset))
+                date_str = date.isoformat()
+                file.write('%s,123456789,0,1234567\n' % (date_str))
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as enwiki has no reading for today
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_enwiki_too_low_zero(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        today = datetime.date.today()
+        with open(enwiki_file_abs, 'w') as file:
+            for day_offset in range(-10, 0):
+                date = (today + datetime.timedelta(days=day_offset))
+                date_str = date.isoformat()
+                file.write('%s,123456789,12345678,0\n' % (date_str))
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        # At least one issue, as enwiki has no reading for today
+        nose.tools.assert_greater_equal(len(issues), 1)
+
+    def test_validity_valid(self):
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        self.create_valid_aggregated_projects(tmp_dir_abs)
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            tmp_dir_abs)
+
+        self.assertEquals(issues, [])
