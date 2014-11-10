@@ -124,7 +124,7 @@ def get_daily_count(source_dir_abs, webstatscollector_abbreviation, date):
 
 
 def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
-                                  last_date):
+                                  last_date, force_recomputation=False):
     """Updates daily per project CSVs from hourly projectcounts files.
 
     The existing per project CSV files in target_dir_abs are updated with daily
@@ -142,6 +142,8 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
     :param target_dir_abs: Absolute directory of the per project CSVs.
     :param first_date: The first date to compute non-existing data for.
     :param last_date: The last date to compute non-existing data for.
+    :param force_recomputation: If True, recompute data for the given days,
+        even if it is already in the CSV. (Default: False)
     """
     for csv_file_abs in glob.glob(os.path.join(target_dir_abs, '*.csv')):
         logging.info("Updating csv '%s'" % (csv_file_abs))
@@ -166,7 +168,7 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
             date_str = date.isoformat()
             logging.debug("Updating csv '%s' for date '%s'" % (
                 dbname, str(date)))
-            if date_str not in csv_data:
+            if date_str not in csv_data or force_recomputation:
                 # desktop site
                 abbreviation = util.dbname_to_webstatscollector_abbreviation(
                     dbname, 'desktop')

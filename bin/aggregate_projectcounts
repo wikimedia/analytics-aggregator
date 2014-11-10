@@ -18,7 +18,7 @@ Aggregates Wikimedia's hourly projectcount files into daily per project files
 
 Usage: aggregate_projectcounts [--source SOURCE_DIR] [--target TARGET_DIR]
            [--first-date FIRST_DATE] [--last-date LAST_DATE] [--date DATE]
-           [--log LOG_FILE] [--push-target] [-v ...] [--help]
+           [--log LOG_FILE] [--force] [--push-target] [-v ...] [--help]
 
 Options:
     -h, --help               Show this help message and exit.
@@ -34,6 +34,8 @@ Options:
                              [default: yesterday]
     --date DATE              Day to aggregate for (overrides --first-date, and
                              --last-date)
+    --force                  Force recomputation of given days, even if the CSV
+                             would already contain that data.
     --push-target            Assumes the target directory is a git repository,
                              and automatically hard reset it before the
                              aggregation, and commit and push after the
@@ -151,6 +153,8 @@ if __name__ == '__main__':
         logging.error("first_date '%s' is not before last_date '%s'" %
                       (first_date, last_date))
 
+    force_recomputation = arguments['--force']
+
     if not all_parameters_ok:
         logging.error("Parameters could not get parsed")
         sys.exit(1)
@@ -166,7 +170,8 @@ if __name__ == '__main__':
         source_dir_abs,
         target_dir_abs,
         first_date,
-        last_date
+        last_date,
+        force_recomputation
     )
 
     if arguments["--push-target"]:

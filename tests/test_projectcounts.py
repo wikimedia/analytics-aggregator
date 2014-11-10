@@ -394,6 +394,50 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-03,72276,0,0',
             ])
 
+    def test_update_daily_forced_recomputation(self):
+        fixture = os.path.join(FIXTURES_DIR_ABS,
+                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        date = datetime.date(2014, 11, 1)
+
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        self.create_file(enwiki_file_abs, [
+            '2014-11-01,1,2,3'
+            ])
+
+        aggregator.update_daily_per_project_csvs(
+            fixture,
+            tmp_dir_abs,
+            date,
+            date,
+            True)
+
+        self.assert_file_content_equals(enwiki_file_abs, [
+            '2014-11-01,24276,0,0',
+            ])
+
+    def test_update_daily_forced_recomputation_missing_hours(self):
+        fixture = os.path.join(FIXTURES_DIR_ABS, '2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 1)
+
+        tmp_dir_abs = self.create_tmp_dir_abs()
+
+        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        self.create_file(enwiki_file_abs, [
+            '2014-11-01,1,2,3'
+            ])
+
+        nose.tools.assert_raises(
+            RuntimeError,
+            aggregator.update_daily_per_project_csvs,
+            fixture,
+            tmp_dir_abs,
+            date,
+            date,
+            True)
+
     def test_validity_no_csvs(self):
         tmp_dir_abs = self.create_tmp_dir_abs()
 
