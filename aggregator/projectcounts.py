@@ -188,16 +188,17 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
                     source_dir_abs, abbreviation, date)
 
                 # injecting obtained data
-                csv_data[date_str] = '%s,%d,%d,%d%s' % (
+                csv_data[date_str] = '%s,%d,%d,%d,%d%s' % (
                     date_str,
+                    count_desktop + count_mobile + count_zero,
                     count_desktop,
                     count_mobile,
                     count_zero,
                     CSV_LINE_ENDING)
 
         with open(csv_file_abs, 'w') as csv_file:
-            csv_file.write('Date,Desktop site,Mobile site,Zero site%s' % (
-                CSV_LINE_ENDING))
+            csv_file.write('Date,Total,Desktop site,Mobile site,Zero site%s'
+                           % (CSV_LINE_ENDING))
             csv_file.writelines(sorted(csv_data.itervalues()))
 
 
@@ -236,7 +237,7 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
                 # opened in text mode by default, line ends are normalized to
                 # LF, event though CRLF gets written.
                 last_line_split = last_line.split(',')
-                if len(last_line_split) == 4:
+                if len(last_line_split) == 5:
                     # Check if last line is not older than yesterday
                     try:
                         last_line_date = util.parse_string_to_date(
@@ -249,9 +250,20 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
                                       "'%s'" % (csv_file_abs, last_line))
 
                     if dbname in big_wikis:
-                        # Check desktop count
+                        # Check total count
                         try:
                             if int(last_line_split[1]) < 1000000:
+                                issues.append("Total count of last line of "
+                                              "%s is too low '%s'" % (
+                                                  csv_file_abs, last_line))
+                        except ValueError:
+                            issues.append("Total count of last line of %s is"
+                                          "not an integer '%s'" % (
+                                              csv_file_abs, last_line))
+
+                        # Check desktop count
+                        try:
+                            if int(last_line_split[2]) < 1000000:
                                 issues.append("Desktop count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
@@ -262,7 +274,7 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
 
                         # Check mobile count
                         try:
-                            if int(last_line_split[2]) < 10000:
+                            if int(last_line_split[3]) < 10000:
                                 issues.append("Desktop count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
@@ -273,7 +285,7 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
 
                         # Check zero count
                         try:
-                            if int(last_line_split[3]) < 100:
+                            if int(last_line_split[4]) < 100:
                                 issues.append("Zero count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
@@ -282,8 +294,23 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
                                           "not an integer '%s'" % (
                                               csv_file_abs, last_line))
 
+                        # Check zero count
+                        try:
+                            if int(last_line_split[1]) != \
+                                    int(last_line_split[2]) + \
+                                    int(last_line_split[3]) + \
+                                    int(last_line_split[4]):
+                                issues.append(
+                                    "Total column is not the sum of "
+                                    "individual columns in '%s' for %s" % (
+                                        last_line, csv_file_abs))
+                        except ValueError:
+                            # Some column is not a number. This has already
+                            # been reported above, so we just pass.
+                            pass
+
                 else:
-                    issues.append("Last line of %s does not have 4 columns: "
+                    issues.append("Last line of %s does not have 5 columns: "
                                   "'%s'" % (csv_file_abs, last_line))
             else:
                 issues.append("No lines for %s" % csv_file_abs)
