@@ -18,7 +18,7 @@ Aggregates Wikimedia's hourly projectcount files into daily per project files
 
 Usage: aggregate_projectcounts [--source SOURCE_DIR] [--target TARGET_DIR]
            [--first-date FIRST_DATE] [--last-date LAST_DATE] [--date DATE]
-           [-v ...] [--help]
+           [--log LOG_FILE] [-v ...] [--help]
 
 Options:
     -h, --help               Show this help message and exit.
@@ -34,6 +34,7 @@ Options:
                              [default: yesterday]
     --date DATE              Day to aggregate for (overrides --first-date, and
                              --last-date)
+    --log LOG_FILE           In addition to stdout, also log to LOG_FILE
 
     -v, --verbose            Increase verbosity
 """
@@ -50,20 +51,45 @@ import logging
 
 import aggregator
 
-if __name__ == '__main__':
-    arguments = docopt(__doc__)
+LOG_MESSAGE_FORMAT = '%(asctime)s %(levelname)-6s %(message)s'
+LOG_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
-    # Setting up logging
+
+def setup_logging(verbosity, log_file):
     log_level_map = {
         1: logging.WARNING,
         2: logging.INFO,
         3: logging.DEBUG,
         }
-    verbosity = min(arguments['--verbose'], 3)  # cap at 3, to allow many "-v"
-    log_level = log_level_map.get(verbosity, logging.ERROR)
-    logging.basicConfig(level=log_level,
-                        format='%(asctime)s %(levelname)-6s %(message)s',
-                        datefmt='%Y-%m-%dT%H:%M:%S')
+    log_level = log_level_map.get(min(verbosity, 3), logging.ERROR)
+
+    if log_file:
+        log_file_abs = os.path.abspath(log_file)
+
+        # Make sure log file's directory exists
+        if not os.path.exists(os.path.dirname(log_file_abs)):
+            os.makedirs(os.path.dirname(log_file_abs))
+
+        # Root logger at DEBUG
+        logging.basicConfig(level=logging.DEBUG,
+                            format=LOG_MESSAGE_FORMAT,
+                            datefmt=LOG_DATE_FORMAT,
+                            filename=log_file_abs)
+        # Console logger at user specified verbosity
+        console_logger = logging.StreamHandler()
+        console_logger.setLevel(log_level)
+        console_logger.setFormatter(logging.Formatter(LOG_MESSAGE_FORMAT))
+        logging.getLogger('').addHandler(console_logger)
+    else:
+        logging.basicConfig(level=log_level,
+                            format=LOG_MESSAGE_FORMAT,
+                            datefmt=LOG_DATE_FORMAT)
+
+
+if __name__ == '__main__':
+    arguments = docopt(__doc__)
+
+    setup_logging(arguments['--verbose'], arguments['--log'])
 
     logging.debug("Parsed arguments: %s" % (arguments))
 
