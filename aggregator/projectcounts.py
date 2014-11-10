@@ -30,6 +30,8 @@ import util
 PROJECTCOUNTS_STRFTIME_PATTERN = ('%%Y%s%%Y-%%m%sprojectcounts-%%Y%%m%%d-'
                                   '%%H0000' % (os.sep, os.sep))
 
+CSV_LINE_ENDING = '\r\n'
+
 cache = {}
 
 
@@ -158,7 +160,7 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
 
                 if date_str != 'Date':
                     # No header line
-                    csv_data[date_str] = line.strip() + '\n'
+                    csv_data[date_str] = line.strip() + CSV_LINE_ENDING
 
         for date in util.generate_dates(first_date, last_date):
             date_str = date.isoformat()
@@ -184,14 +186,16 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
                     source_dir_abs, abbreviation, date)
 
                 # injecting obtained data
-                csv_data[date_str] = '%s,%d,%d,%d\n' % (
+                csv_data[date_str] = '%s,%d,%d,%d%s' % (
                     date_str,
                     count_desktop,
                     count_mobile,
-                    count_zero)
+                    count_zero,
+                    CSV_LINE_ENDING)
 
         with open(csv_file_abs, 'w') as csv_file:
-            csv_file.write('Date,Desktop site,Mobile site,Zero site\n')
+            csv_file.write('Date,Desktop site,Mobile site,Zero site%s' % (
+                CSV_LINE_ENDING))
             csv_file.writelines(sorted(csv_data.itervalues()))
 
 
@@ -226,7 +230,9 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
 
             if len(lines):
                 # Analyze last line
-                last_line = (lines[-1]).split('\n', 1)[0]
+                last_line = (lines[-1]).split('\n', 1)[0]  # Since the file is
+                # opened in text mode by default, line ends are normalized to
+                # LF, event though CRLF gets written.
                 last_line_split = last_line.split(',')
                 if len(last_line_split) == 4:
                     # Check if last line is not older than yesterday

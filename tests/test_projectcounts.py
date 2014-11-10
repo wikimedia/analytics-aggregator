@@ -54,7 +54,7 @@ class ProjectcountsTestCase(unittest.TestCase):
     def create_file(self, file_abs, lines):
         with open(file_abs, 'w') as file:
             for line in lines:
-                file.write(line + '\n')
+                file.write(line + aggregator.CSV_LINE_ENDING)
 
     def create_valid_aggregated_projects(self, tmp_dir_abs):
         today = datetime.date.today()
@@ -73,14 +73,16 @@ class ProjectcountsTestCase(unittest.TestCase):
                 for day_offset in range(-10, 0):
                     date = (today + datetime.timedelta(days=day_offset))
                     date_str = date.isoformat()
-                    file.write('%s,123456789,12345678,1234567\n' % (date_str))
+                    file.write('%s,123456789,12345678,1234567%s' % (
+                        date_str, aggregator.CSV_LINE_ENDING))
 
     def assert_file_content_equals(self, actual_file_abs, expected_lines):
         expected_lines.insert(0, 'Date,Desktop site,Mobile site,Zero site')
         with open(actual_file_abs, 'r') as file:
             for expected_line in expected_lines:
                 try:
-                    self.assertEquals(file.next(), expected_line + '\n')
+                    self.assertEquals(file.next(), expected_line +
+                                      aggregator.CSV_LINE_ENDING)
                 except StopIteration:
                     self.fail("File '%s' is missing the line:\n%s" % (
                         actual_file_abs, expected_line))
@@ -451,11 +453,12 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         yesterday = aggregator.parse_string_to_date('yesterday')
-        with open(enwiki_file_abs, 'w') as file:
-            for day_offset in range(-10, 0):
-                date = (yesterday + datetime.timedelta(days=day_offset))
-                date_str = date.isoformat()
-                file.write('%s,123456789,12345678,1234567\n' % (date_str))
+        lines = []
+        for day_offset in range(-10, 0):
+            date = (yesterday + datetime.timedelta(days=day_offset))
+            date_str = date.isoformat()
+            lines.append('%s,123456789,12345678,1234567' % (date_str))
+        self.create_file(enwiki_file_abs, lines)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             tmp_dir_abs)
@@ -470,11 +473,12 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         today = datetime.date.today()
-        with open(enwiki_file_abs, 'w') as file:
-            for day_offset in range(-10, 0):
-                date = (today + datetime.timedelta(days=day_offset))
-                date_str = date.isoformat()
-                file.write('%s,0,12345678,1234567\n' % (date_str))
+        lines = []
+        for day_offset in range(-10, 0):
+            date = (today + datetime.timedelta(days=day_offset))
+            date_str = date.isoformat()
+            lines.append('%s,0,12345678,1234567' % (date_str))
+        self.create_file(enwiki_file_abs, lines)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             tmp_dir_abs)
@@ -489,11 +493,12 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         today = datetime.date.today()
-        with open(enwiki_file_abs, 'w') as file:
-            for day_offset in range(-10, 0):
-                date = (today + datetime.timedelta(days=day_offset))
-                date_str = date.isoformat()
-                file.write('%s,123456789,0,1234567\n' % (date_str))
+        lines = []
+        for day_offset in range(-10, 0):
+            date = (today + datetime.timedelta(days=day_offset))
+            date_str = date.isoformat()
+            lines.append('%s,123456789,0,1234567' % (date_str))
+        self.create_file(enwiki_file_abs, lines)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             tmp_dir_abs)
@@ -508,11 +513,12 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         today = datetime.date.today()
-        with open(enwiki_file_abs, 'w') as file:
-            for day_offset in range(-10, 0):
-                date = (today + datetime.timedelta(days=day_offset))
-                date_str = date.isoformat()
-                file.write('%s,123456789,12345678,0\n' % (date_str))
+        lines = []
+        for day_offset in range(-10, 0):
+            date = (today + datetime.timedelta(days=day_offset))
+            date_str = date.isoformat()
+            lines.append('%s,123456789,12345678,0' % (date_str))
+        self.create_file(enwiki_file_abs, lines)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             tmp_dir_abs)
