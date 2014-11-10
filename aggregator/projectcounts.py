@@ -155,7 +155,10 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
                 if date_str in csv_data:
                     raise RuntimeError(
                         "CSV contains the date '%s' twice" % (date_str))
-                csv_data[date_str] = line.strip() + '\n'
+
+                if date_str != 'Date':
+                    # No header line
+                    csv_data[date_str] = line.strip() + '\n'
 
         for date in util.generate_dates(first_date, last_date):
             date_str = date.isoformat()
@@ -188,6 +191,7 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
                     count_zero)
 
         with open(csv_file_abs, 'w') as csv_file:
+            csv_file.write('Date,Desktop site,Mobile site,Zero site\n')
             csv_file.writelines(sorted(csv_data.itervalues()))
 
 

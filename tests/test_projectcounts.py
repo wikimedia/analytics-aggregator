@@ -76,6 +76,7 @@ class ProjectcountsTestCase(unittest.TestCase):
                     file.write('%s,123456789,12345678,1234567\n' % (date_str))
 
     def assert_file_content_equals(self, actual_file_abs, expected_lines):
+        expected_lines.insert(0, 'Date,Desktop site,Mobile site,Zero site')
         with open(actual_file_abs, 'r') as file:
             for expected_line in expected_lines:
                 try:
