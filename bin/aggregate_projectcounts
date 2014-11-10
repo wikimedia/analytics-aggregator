@@ -18,7 +18,7 @@ Aggregates Wikimedia's hourly projectcount files into daily per project files
 
 Usage: aggregate_projectcounts [--source SOURCE_DIR] [--target TARGET_DIR]
            [--first-date FIRST_DATE] [--last-date LAST_DATE] [--date DATE]
-           [--log LOG_FILE] [-v ...] [--help]
+           [--log LOG_FILE] [--push-target] [-v ...] [--help]
 
 Options:
     -h, --help               Show this help message and exit.
@@ -34,6 +34,10 @@ Options:
                              [default: yesterday]
     --date DATE              Day to aggregate for (overrides --first-date, and
                              --last-date)
+    --push-target            Assumes the target directory is a git repository,
+                             and automatically hard reset it before the
+                             aggregation, and commit and push after the
+                             aggregation.
     --log LOG_FILE           In addition to stdout, also log to LOG_FILE
 
     -v, --verbose            Increase verbosity
@@ -48,11 +52,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from docopt import docopt
 
 import logging
+import subprocess
 
 import aggregator
 
 LOG_MESSAGE_FORMAT = '%(asctime)s %(levelname)-6s %(message)s'
 LOG_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+GIT_FILE_ABS = '/usr/bin/git'
 
 
 def setup_logging(verbosity, log_file):
@@ -84,6 +91,15 @@ def setup_logging(verbosity, log_file):
         logging.basicConfig(level=log_level,
                             format=LOG_MESSAGE_FORMAT,
                             datefmt=LOG_DATE_FORMAT)
+
+
+def run_git(args):
+    # To avoid depending on not-per-default-included git module, we run git by
+    # hand.
+    git_command = [GIT_FILE_ABS]
+    git_command.extend(args)
+    logging.info("Spawning git with : %s", git_command)
+    subprocess.check_call(git_command)
 
 
 if __name__ == '__main__':
@@ -139,9 +155,22 @@ if __name__ == '__main__':
         logging.error("Parameters could not get parsed")
         sys.exit(1)
 
+    if arguments["--push-target"]:
+        os.chdir(target_dir_abs)
+        run_git(['reset', '--quiet', '--hard'])
+        run_git(['checkout', '--quiet', 'master'])
+        run_git(['pull', '--quiet'])
+        run_git(['reset', '--quiet', '--hard', 'origin/master'])
+
     aggregator.update_daily_per_project_csvs(
         source_dir_abs,
         target_dir_abs,
         first_date,
         last_date
     )
+
+    if arguments["--push-target"]:
+        commit_message = "Automatic commit for dates %s until %s" % (
+            first_date.isoformat(), last_date.isoformat())
+        run_git(['commit', '--quiet', '*.csv', '-m', commit_message])
+        run_git(['push', '--quiet', 'origin', 'HEAD:refs/heads/master'])
