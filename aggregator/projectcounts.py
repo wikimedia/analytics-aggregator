@@ -145,7 +145,8 @@ def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
     :param force_recomputation: If True, recompute data for the given days,
         even if it is already in the CSV. (Default: False)
     """
-    for csv_file_abs in glob.glob(os.path.join(target_dir_abs, '*.csv')):
+    for csv_file_abs in sorted(glob.glob(os.path.join(
+            target_dir_abs, '*.csv'))):
         logging.info("Updating csv '%s'" % (csv_file_abs))
 
         csv_data = {}
