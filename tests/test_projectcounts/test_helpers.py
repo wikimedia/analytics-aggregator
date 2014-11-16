@@ -52,6 +52,92 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
         nose.tools.assert_raises(RuntimeError,
                                  aggregator.aggregate_for_date, fixture, date)
 
+    def test_aggregate_for_date_missing_hours_2014_11_01_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 1)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.aggregate_for_date,
+                                 fixture, date, allow_bad_data=False)
+
+    def test_aggregate_for_date_missing_hours_2014_11_02_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 2)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.aggregate_for_date,
+                                 fixture, date, allow_bad_data=False)
+
+    def test_aggregate_for_date_missing_hours_2014_11_03_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 3)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.aggregate_for_date,
+                                 fixture, date, allow_bad_data=False)
+
+    def test_aggregate_for_date_missing_hours_2014_11_04_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 4)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.aggregate_for_date,
+                                 fixture, date, allow_bad_data=False)
+
+    def test_aggregate_for_date_missing_hours_2014_11_01_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 1)
+
+        actual = aggregator.aggregate_for_date(fixture, date,
+                                               allow_bad_data=True)
+        # Each hour is 100 + the hour itself. The last hour is missing. So,
+        # we're expecting 24*100 + 23*12 - 123 = 2553
+        expected = {'en': 2553}
+
+        self.assertEquals(actual, expected)
+
+    def test_aggregate_for_date_missing_hours_2014_11_02_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 2)
+
+        actual = aggregator.aggregate_for_date(fixture, date,
+                                               allow_bad_data=True)
+        # Each hour is 200 + the hour itself. The 12th hour is missing. So,
+        # we're expecting 24*200 + 23*12 - 212 = 4864
+        expected = {'en': 4864}
+
+        self.assertEquals(actual, expected)
+
+    def test_aggregate_for_date_missing_hours_2014_11_03_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 3)
+
+        actual = aggregator.aggregate_for_date(fixture, date,
+                                               allow_bad_data=True)
+        # Each hour is 300 + the hour itself. The first and last hour are
+        # missing. So, we're expecting 24*300 + 23*12 - 300 - 323 = 6853
+        expected = {'en': 6853}
+
+        self.assertEquals(actual, expected)
+
+    def test_aggregate_for_date_missing_hours_2014_11_04_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 4)
+
+        actual = aggregator.aggregate_for_date(fixture, date,
+                                               allow_bad_data=True)
+
+        # No hour files at all, so no data is expected
+        self.assertEquals(actual, {})
+
     def test_aggregate_for_date_enwiki_different_per_day_1(self):
         fixture = self.get_fixture_dir_abs(
             '2014-11-3days-enwiki-day-times-100-plus-hour')
@@ -139,4 +225,123 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         actual = aggregator.get_daily_count(fixture, 'foo', date)
 
+        self.assertEquals(actual, 0)
+
+    def test_get_daily_count_missing_hours_2014_11_01(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 1)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date)
+
+    def test_get_daily_count_missing_hours_2014_11_02(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 2)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date)
+
+    def test_get_daily_count_missing_hours_2014_11_03(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 3)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date)
+
+    def test_get_daily_count_missing_hours_2014_11_04(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 4)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date)
+
+    def test_get_daily_count_missing_hours_2014_11_01_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 1)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date, allow_bad_data=False)
+
+    def test_get_daily_count_missing_hours_2014_11_02_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 2)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date, allow_bad_data=False)
+
+    def test_get_daily_count_missing_hours_2014_11_03_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 3)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date, allow_bad_data=False)
+
+    def test_get_daily_count_missing_hours_2014_11_04_no_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 4)
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.get_daily_count,
+                                 fixture, 'en', date, allow_bad_data=False)
+
+    def test_get_daily_count_missing_hours_2014_11_01_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 1)
+
+        actual = aggregator.get_daily_count(fixture, 'en', date,
+                                            allow_bad_data=True)
+
+        # Each hour is 100 + the hour itself. The last hour is missing. So,
+        # we're expecting 24*100 + 23*12 - 123 = 2553
+        self.assertEquals(actual, 2553)
+
+    def test_get_daily_count_missing_hours_2014_11_02_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 2)
+
+        actual = aggregator.get_daily_count(fixture, 'en', date,
+                                            allow_bad_data=True)
+
+        # Each hour is 200 + the hour itself. The 12th hour is missing. So,
+        # we're expecting 24*200 + 23*12 - 212 = 4864
+        self.assertEquals(actual, 4864)
+
+    def test_get_daily_count_missing_hours_2014_11_03_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 3)
+
+        actual = aggregator.get_daily_count(fixture, 'en', date,
+                                            allow_bad_data=True)
+
+        # Each hour is 300 + the hour itself. The first and last hour are
+        # missing. So, we're expecting 24*300 + 23*12 - 300 - 323 = 6853
+        self.assertEquals(actual, 6853)
+
+    def test_get_daily_count_missing_hours_2014_11_04_allow_bad_data(self):
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
+        date = datetime.date(2014, 11, 4)
+
+        actual = aggregator.get_daily_count(fixture, 'en', date,
+                                            allow_bad_data=True)
+
+        # No hour files at all, so no count is expected
         self.assertEquals(actual, 0)

@@ -28,10 +28,11 @@ Options:
     --target TARGET_DIR      Write daily aggregated CSV files into TARGET_DIR.
                              For each wiki that has a (maybe still empty) csv
                              with the corresponding database name in
-                             TARGET_DIR, the CSV is updated with the wiki's
-                             projectcounts for the specified dates.
+                             TARGET_DIR's 'daily_raw' subdirectory, the CSV is
+                             updated with the wiki's projectcounts for the
+                             specified dates.
                              So for example to compute data for the English
-                             Wikipedia, put a file 'enwiki.csv' in
+                             Wikipedia, put a file 'daily_raw/enwiki.csv' in
                              TARGET_DIR.
                              [default: ./data]
 
@@ -50,6 +51,17 @@ Options:
     --log LOG_FILE           In addition to stdout, also log to LOG_FILE
 
     -v, --verbose            Increase verbosity
+
+
+This script computes the following aggregations (in separate sub-directories):
+   TARGET_DIR/daily_raw -- Aggregation by day for "all available" (not
+                           necessarily "all") hours for a project. Those CSVs
+                           do not hold corrections of any kind.
+   TARGET_DIR/daily     -- daily_raw without bad dates (see below).
+
+The bad dates are read from TARGET_DIR/BAD_DATES.csv. The first column
+in that CSV have to be dates, the other columns are ignored, and can
+for example be used to document why the date is bad.
 """
 
 # Add parent directory to python path to allow allow loading of modules without
@@ -173,12 +185,21 @@ if __name__ == '__main__':
         run_git(['pull', '--quiet'])
         run_git(['reset', '--quiet', '--hard', 'origin/master'])
 
+    bad_dates_file_abs = os.path.join(target_dir_abs, 'BAD_DATES.csv')
+    bad_dates = [aggregator.parse_string_to_date(date)
+                 for date in aggregator.parse_csv_to_first_column_dict(
+        bad_dates_file_abs).keys()]
+
+    additional_aggregators = [aggregator.update_daily_csv]
+
     aggregator.update_per_project_csvs_for_dates(
         source_dir_abs,
         target_dir_abs,
         first_date,
         last_date,
-        force_recomputation
+        bad_dates=bad_dates,
+        additional_aggregators=additional_aggregators,
+        force_recomputation=force_recomputation
     )
 
     if arguments["--push-target"]:

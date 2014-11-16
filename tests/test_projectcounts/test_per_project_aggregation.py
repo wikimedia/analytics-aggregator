@@ -43,7 +43,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         nose.tools.assert_raises(
@@ -60,7 +60,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4'
             ])
@@ -81,7 +81,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
@@ -100,7 +100,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 2)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
@@ -119,7 +119,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 3)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
@@ -138,7 +138,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 2)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-03,1,2,3,4',
             '2014-11-01,5,6,7,8',
@@ -162,7 +162,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 2)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4',
             '2014-11-01,2,3,4,5',
@@ -183,7 +183,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
         first_date = datetime.date(2014, 11, 1)
         last_date = datetime.date(2014, 11, 3)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
@@ -204,7 +204,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4'
             ])
@@ -214,7 +214,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             self.data_dir_abs,
             date,
             date,
-            True)
+            force_recomputation=True)
 
         self.assert_file_content_equals(enwiki_file_abs, [
             '2014-11-01,24276,24276,0,0',
@@ -225,7 +225,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4'
             ])
@@ -237,4 +237,104 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             self.data_dir_abs,
             date,
             date,
-            True)
+            force_recomputation=True)
+
+    def test_update_per_project_additional_aggregators(self):
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
+        first_date = datetime.date(2014, 11, 1)
+        last_date = datetime.date(2014, 11, 3)
+
+        # Mock an additional aggregator
+        funcMockParams = []
+
+        def funcMock(target_dir_abs, dbname, csv_data_input, first_date,
+                     last_date, bad_dates, force_recomputation):
+            funcMockParams.append([
+                target_dir_abs, dbname, csv_data_input, first_date, last_date,
+                bad_dates, force_recomputation
+                ])
+
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
+        self.create_empty_file(enwiki_file_abs)
+
+        aggregator.update_per_project_csvs_for_dates(
+            fixture,
+            self.data_dir_abs,
+            first_date,
+            last_date,
+            additional_aggregators=[funcMock])
+
+        self.assert_file_content_equals(enwiki_file_abs, [
+            '2014-11-01,24276,24276,0,0',
+            '2014-11-02,48276,48276,0,0',
+            '2014-11-03,72276,72276,0,0',
+            ])
+
+        # Checking calls to additional aggregators
+        self.assertEquals(funcMockParams, [[
+            self.data_dir_abs,
+            'enwiki',
+            {
+                '2014-11-01': '2014-11-01,24276,24276,0,0',
+                '2014-11-02': '2014-11-02,48276,48276,0,0',
+                '2014-11-03': '2014-11-03,72276,72276,0,0'
+                },
+            first_date,
+            last_date,
+            [],
+            False
+            ]])
+
+    def test_update_per_project_additional_aggregators_with_parameters(self):
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
+        first_date = datetime.date(2014, 11, 1)
+        last_date = datetime.date(2014, 11, 3)
+
+        # Mock an additional aggregator
+        funcMockParams = []
+
+        def funcMock(target_dir_abs, dbname, csv_data_input, first_date,
+                     last_date, bad_dates, force_recomputation):
+            funcMockParams.append([
+                target_dir_abs, dbname, csv_data_input, first_date, last_date,
+                bad_dates, force_recomputation
+                ])
+
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
+        self.create_empty_file(enwiki_file_abs)
+
+        bad_dates = [datetime.date(2014, 12, 17)]
+
+        aggregator.update_per_project_csvs_for_dates(
+            fixture,
+            self.data_dir_abs,
+            first_date,
+            last_date,
+            bad_dates=bad_dates,
+            additional_aggregators=[funcMock],
+            force_recomputation=True)
+
+        self.assert_file_content_equals(enwiki_file_abs, [
+            '2014-11-01,24276,24276,0,0',
+            '2014-11-02,48276,48276,0,0',
+            '2014-11-03,72276,72276,0,0',
+            ])
+
+        # Checking calls to additional aggregators
+        self.assertEquals(funcMockParams, [[
+            self.data_dir_abs,
+            'enwiki',
+            {
+                '2014-11-01': '2014-11-01,24276,24276,0,0',
+                '2014-11-02': '2014-11-02,48276,48276,0,0',
+                '2014-11-03': '2014-11-03,72276,72276,0,0'
+                },
+            first_date,
+            last_date,
+            bad_dates,
+            True
+            ]])

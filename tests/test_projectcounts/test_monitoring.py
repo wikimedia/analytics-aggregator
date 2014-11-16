@@ -42,13 +42,22 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
             'itwiki',
             'foo',
         ]:
-            csv_file_abs = os.path.join(self.data_dir_abs, dbname + '.csv')
-            with open(csv_file_abs, 'w') as file:
-                for day_offset in range(-10, 0):
-                    date = (today + datetime.timedelta(days=day_offset))
-                    date_str = date.isoformat()
-                    file.write('%s,137037034,123456789,12345678,1234567%s' % (
-                        date_str, aggregator.CSV_LINE_ENDING))
+            for dir_rel in ['daily_raw', 'daily']:
+                csv_file_abs = os.path.join(
+                    self.data_dir_abs, dir_rel, dbname + '.csv')
+                with open(csv_file_abs, 'w') as file:
+                    for day_offset in range(-10, 0):
+                        date = (today + datetime.timedelta(days=day_offset))
+                        date_str = date.isoformat()
+                        file.write(
+                            '%s,137037034,123456789,12345678,1234567%s' % (
+                                date_str, aggregator.CSV_LINE_ENDING))
+
+
+class DailyRawMonitoringTestCase(MonitoringTestCase):
+    def setUp(self):
+        super(DailyRawMonitoringTestCase, self).setUp()
+        self.csv_dir_abs = self.daily_raw_dir_abs
 
     def assert_has_item_by_re(self, haystack, pattern):
         for straw in haystack:
@@ -67,7 +76,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_no_enwiki(self):
         self.create_valid_aggregated_projects()
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
         os.unlink(enwiki_file_abs)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
@@ -80,7 +89,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_only_big_wikis(self):
         self.create_valid_aggregated_projects()
 
-        foo_file_abs = os.path.join(self.data_dir_abs, 'foo.csv')
+        foo_file_abs = os.path.join(self.csv_dir_abs, 'foo.csv')
         os.unlink(foo_file_abs)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
@@ -94,7 +103,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_enwiki_empty(self):
         self.create_valid_aggregated_projects()
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
@@ -107,7 +116,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_enwiki_no_today(self):
         self.create_valid_aggregated_projects()
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
         yesterday = aggregator.parse_string_to_date('yesterday')
         lines = []
         for day_offset in range(-10, 0):
@@ -126,7 +135,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_enwiki_too_low_desktop(self):
         self.create_valid_aggregated_projects()
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
         today = datetime.date.today()
         lines = []
         for day_offset in range(-10, 0):
@@ -145,7 +154,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_enwiki_too_low_mobile(self):
         self.create_valid_aggregated_projects()
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
         today = datetime.date.today()
         lines = []
         for day_offset in range(-10, 0):
@@ -164,7 +173,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_enwiki_too_low_zero(self):
         self.create_valid_aggregated_projects()
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
         today = datetime.date.today()
         lines = []
         for day_offset in range(-10, 0):
@@ -183,7 +192,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     def test_validity_enwiki_total_does_not_add_up(self):
         self.create_valid_aggregated_projects()
 
-        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
         today = datetime.date.today()
         lines = []
         for day_offset in range(-10, 0):
@@ -206,3 +215,9 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
             self.data_dir_abs)
 
         self.assertEquals(issues, [])
+
+
+class DailyMonitoringTestCase(DailyRawMonitoringTestCase):
+    def setUp(self):
+        super(DailyRawMonitoringTestCase, self).setUp()
+        self.csv_dir_abs = self.daily_dir_abs

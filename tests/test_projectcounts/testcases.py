@@ -95,3 +95,9 @@ class ProjectcountsDataTestCase(ProjectcountsTestCase):
     def setUp(self):
         super(ProjectcountsDataTestCase, self).setUp()
         self.data_dir_abs = self.create_tmp_dir_abs()
+
+        self.daily_raw_dir_abs = os.path.join(self.data_dir_abs, 'daily_raw')
+        os.mkdir(self.daily_raw_dir_abs)
+
+        self.daily_dir_abs = os.path.join(self.data_dir_abs, 'daily')
+        os.mkdir(self.daily_dir_abs)
