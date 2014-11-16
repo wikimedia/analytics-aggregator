@@ -277,7 +277,7 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
                         # Check mobile count
                         try:
                             if int(last_line_split[3]) < 10000:
-                                issues.append("Desktop count of last line of "
+                                issues.append("Mobile count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
                         except ValueError:
