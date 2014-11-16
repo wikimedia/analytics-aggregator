@@ -126,7 +126,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             self.data_dir_abs)
 
-        # At least one issue, as enwiki has no reading for today
+        # At least one issue, as the desktop count is too low
         nose.tools.assert_greater_equal(len(issues), 1)
 
     def test_validity_enwiki_too_low_mobile(self):
@@ -144,7 +144,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             self.data_dir_abs)
 
-        # At least one issue, as enwiki has no reading for today
+        # At least one issue, as the mobile count is too low
         nose.tools.assert_greater_equal(len(issues), 1)
 
     def test_validity_enwiki_too_low_zero(self):
@@ -162,7 +162,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             self.data_dir_abs)
 
-        # At least one issue, as enwiki has no reading for today
+        # At least one issue, as the zero count is too low
         nose.tools.assert_greater_equal(len(issues), 1)
 
     def test_validity_enwiki_total_does_not_add_up(self):
