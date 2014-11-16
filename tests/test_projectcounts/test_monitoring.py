@@ -25,6 +25,7 @@ import testcases
 import os
 import datetime
 import nose
+import re
 
 
 class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
@@ -49,12 +50,19 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
                     file.write('%s,137037034,123456789,12345678,1234567%s' % (
                         date_str, aggregator.CSV_LINE_ENDING))
 
+    def assert_has_item_by_re(self, haystack, pattern):
+        for straw in haystack:
+            if re.search(pattern, straw):
+                return
+        self.fail("Could not find '%s' in %s" % (pattern, haystack))
+
     def test_validity_no_csvs(self):
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
             self.data_dir_abs)
 
         # At least one issue, as no csvs could get found
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, 'not find any CSVs')
 
     def test_validity_no_enwiki(self):
         self.create_valid_aggregated_projects()
@@ -67,6 +75,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
 
         # At least one issue, as enwiki.csv is missing
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, '[mM]issing.*enwiki')
 
     def test_validity_only_big_wikis(self):
         self.create_valid_aggregated_projects()
@@ -80,6 +89,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
         # At least one issue, as no csvs for other wikis than the big wikis are
         # present.
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, 'big wikis')
 
     def test_validity_enwiki_empty(self):
         self.create_valid_aggregated_projects()
@@ -92,6 +102,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
 
         # At least one issue, as enwiki has no reading
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, '[nN]o lines')
 
     def test_validity_enwiki_no_today(self):
         self.create_valid_aggregated_projects()
@@ -110,6 +121,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
 
         # At least one issue, as enwiki has no reading for today
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, 'too old')
 
     def test_validity_enwiki_too_low_desktop(self):
         self.create_valid_aggregated_projects()
@@ -128,6 +140,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
 
         # At least one issue, as the desktop count is too low
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, '[dD]esktop.*too.*low')
 
     def test_validity_enwiki_too_low_mobile(self):
         self.create_valid_aggregated_projects()
@@ -146,6 +159,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
 
         # At least one issue, as the mobile count is too low
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, '[mM]obile.*too.*low')
 
     def test_validity_enwiki_too_low_zero(self):
         self.create_valid_aggregated_projects()
@@ -164,6 +178,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
 
         # At least one issue, as the zero count is too low
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, '[zZ]ero.*too low')
 
     def test_validity_enwiki_total_does_not_add_up(self):
         self.create_valid_aggregated_projects()
@@ -182,6 +197,7 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
 
         # At least one issue, as the total is not the sum of tho other colums.
         nose.tools.assert_greater_equal(len(issues), 1)
+        self.assert_has_item_by_re(issues, '[tT]otal.*not.*sum')
 
     def test_validity_valid(self):
         self.create_valid_aggregated_projects()
