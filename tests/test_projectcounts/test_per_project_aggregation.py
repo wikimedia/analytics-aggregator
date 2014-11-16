@@ -28,33 +28,29 @@ import datetime
 import nose
 
 
-class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
+class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
     """TestCase for project aggregation functions"""
     def test_update_per_project_no_csvs(self):
         fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
 
         date = datetime.date(2014, 11, 1)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        aggregator.update_per_project_csvs_for_dates(fixture, tmp_dir_abs,
-                                                     date, date)
+        aggregator.update_per_project_csvs_for_dates(
+            fixture, self.data_dir_abs, date, date)
 
     def test_update_per_project_single_csvs_missing_hours(self):
         fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
 
         date = datetime.date(2014, 11, 1)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         nose.tools.assert_raises(
             RuntimeError,
             aggregator.update_per_project_csvs_for_dates,
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date)
 
@@ -64,16 +60,14 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4'
             ])
 
         aggregator.update_per_project_csvs_for_dates(
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date)
 
@@ -87,14 +81,12 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date)
 
@@ -108,14 +100,12 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 2)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date)
 
@@ -129,14 +119,12 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 3)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date)
 
@@ -150,9 +138,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 2)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-03,1,2,3,4',
             '2014-11-01,5,6,7,8',
@@ -160,7 +146,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         aggregator.update_per_project_csvs_for_dates(
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date)
 
@@ -176,9 +162,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 2)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4',
             '2014-11-01,2,3,4,5',
@@ -188,7 +172,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
             RuntimeError,
             aggregator.update_per_project_csvs_for_dates,
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date)
 
@@ -199,14 +183,12 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
         first_date = datetime.date(2014, 11, 1)
         last_date = datetime.date(2014, 11, 3)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
         aggregator.update_per_project_csvs_for_dates(
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             first_date,
             last_date)
 
@@ -222,16 +204,14 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4'
             ])
 
         aggregator.update_per_project_csvs_for_dates(
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date,
             True)
@@ -245,9 +225,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
 
         date = datetime.date(2014, 11, 1)
 
-        tmp_dir_abs = self.create_tmp_dir_abs()
-
-        enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
+        enwiki_file_abs = os.path.join(self.data_dir_abs, 'enwiki.csv')
         self.create_file(enwiki_file_abs, [
             '2014-11-01,1,2,3,4'
             ])
@@ -256,7 +234,7 @@ class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
             RuntimeError,
             aggregator.update_per_project_csvs_for_dates,
             fixture,
-            tmp_dir_abs,
+            self.data_dir_abs,
             date,
             date,
             True)

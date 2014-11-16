@@ -89,3 +89,9 @@ class ProjectcountsTestCase(unittest.TestCase):
             pass
         finally:
             super(ProjectcountsTestCase, self).tearDown()
+
+
+class ProjectcountsDataTestCase(ProjectcountsTestCase):
+    def setUp(self):
+        super(ProjectcountsDataTestCase, self).setUp()
+        self.data_dir_abs = self.create_tmp_dir_abs()
