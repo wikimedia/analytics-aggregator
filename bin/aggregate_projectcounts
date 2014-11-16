@@ -25,7 +25,14 @@ Options:
 
     --source SOURCE_DIR      Read hourly projectcount files from SOURCE_DIR.
                              [default: /mnt/hdfs/wmf/data/archive/webstats]
-    --target TARGET_DIR      Write daily aggregated CSV files into TARGET_DIR
+    --target TARGET_DIR      Write daily aggregated CSV files into TARGET_DIR.
+                             For each wiki that has a (maybe still empty) csv
+                             with the corresponding database name in
+                             TARGET_DIR, the CSV is updated with the wiki's
+                             projectcounts for the specified dates.
+                             So for example to compute data for the English
+                             Wikipedia, put a file 'enwiki.csv' in
+                             TARGET_DIR.
                              [default: ./data]
 
     --first-date FIRST_DATE  First day to aggregate for
