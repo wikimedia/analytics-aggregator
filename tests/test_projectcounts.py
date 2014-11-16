@@ -56,26 +56,6 @@ class ProjectcountsTestCase(unittest.TestCase):
             for line in lines:
                 file.write(line + aggregator.CSV_LINE_ENDING)
 
-    def create_valid_aggregated_projects(self, tmp_dir_abs):
-        today = datetime.date.today()
-        for dbname in [
-            'enwiki',
-            'jawiki',
-            'dewiki',
-            'eswiki',
-            'frwiki',
-            'ruwiki',
-            'itwiki',
-            'foo',
-        ]:
-            csv_file_abs = os.path.join(tmp_dir_abs, dbname + '.csv')
-            with open(csv_file_abs, 'w') as file:
-                for day_offset in range(-10, 0):
-                    date = (today + datetime.timedelta(days=day_offset))
-                    date_str = date.isoformat()
-                    file.write('%s,137037034,123456789,12345678,1234567%s' % (
-                        date_str, aggregator.CSV_LINE_ENDING))
-
     def assert_file_content_equals(self, actual_file_abs, expected_lines):
         header = 'Date,Total,Desktop site,Mobile site,Zero site'
         expected_lines.insert(0, header)
@@ -106,6 +86,9 @@ class ProjectcountsTestCase(unittest.TestCase):
         except AttributeError:
             pass
 
+
+class BasicTestCase(ProjectcountsTestCase):
+    """TestCase for helper functions"""
     def test_aggregate_for_date_missing_hours_2014_11_01(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-missing-hours')
@@ -216,6 +199,9 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         self.assertEquals(actual, 0)
 
+
+class ProjectAggregationTestCase(ProjectcountsTestCase):
+    """TestCase for project aggregation functions"""
     def test_update_per_project_no_csvs(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-missing-hours')
@@ -438,6 +424,29 @@ class ProjectcountsTestCase(unittest.TestCase):
             date,
             date,
             True)
+
+
+class MonitoringTestCase(ProjectcountsTestCase):
+    """TestCase for monitoring functions"""
+    def create_valid_aggregated_projects(self, tmp_dir_abs):
+        today = datetime.date.today()
+        for dbname in [
+            'enwiki',
+            'jawiki',
+            'dewiki',
+            'eswiki',
+            'frwiki',
+            'ruwiki',
+            'itwiki',
+            'foo',
+        ]:
+            csv_file_abs = os.path.join(tmp_dir_abs, dbname + '.csv')
+            with open(csv_file_abs, 'w') as file:
+                for day_offset in range(-10, 0):
+                    date = (today + datetime.timedelta(days=day_offset))
+                    date_str = date.isoformat()
+                    file.write('%s,137037034,123456789,12345678,1234567%s' % (
+                        date_str, aggregator.CSV_LINE_ENDING))
 
     def test_validity_no_csvs(self):
         tmp_dir_abs = self.create_tmp_dir_abs()
