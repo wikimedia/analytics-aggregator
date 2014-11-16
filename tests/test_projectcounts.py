@@ -216,17 +216,17 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         self.assertEquals(actual, 0)
 
-    def test_update_daily_per_project_no_csvs(self):
+    def test_update_per_project_no_csvs(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-missing-hours')
         date = datetime.date(2014, 11, 1)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
 
-        aggregator.update_daily_per_project_csvs(fixture, tmp_dir_abs,
-                                                 date, date)
+        aggregator.update_per_project_csvs_for_dates(fixture, tmp_dir_abs,
+                                                     date, date)
 
-    def test_update_daily_per_project_single_csvs_missing_hours(self):
+    def test_update_per_project_single_csvs_missing_hours(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-missing-hours')
         date = datetime.date(2014, 11, 1)
@@ -238,13 +238,13 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         nose.tools.assert_raises(
             RuntimeError,
-            aggregator.update_daily_per_project_csvs,
+            aggregator.update_per_project_csvs_for_dates,
             fixture,
             tmp_dir_abs,
             date,
             date)
 
-    def test_update_daily_per_project_single_csvs_missing_hours_existing(self):
+    def test_update_per_project_single_csvs_missing_hours_existing(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-3days-enwiki-day-times-100-plus-hour')
         date = datetime.date(2014, 11, 1)
@@ -256,7 +256,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-01,1,2,3,4'
             ])
 
-        aggregator.update_daily_per_project_csvs(
+        aggregator.update_per_project_csvs_for_dates(
             fixture,
             tmp_dir_abs,
             date,
@@ -266,7 +266,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-01,1,2,3,4',
             ])
 
-    def test_update_daily_per_project_single_csvs_3days_2014_11_01(self):
+    def test_update_per_project_single_csvs_3days_2014_11_01(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-3days-enwiki-day-times-100-plus-hour')
         date = datetime.date(2014, 11, 1)
@@ -276,7 +276,7 @@ class ProjectcountsTestCase(unittest.TestCase):
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
-        aggregator.update_daily_per_project_csvs(
+        aggregator.update_per_project_csvs_for_dates(
             fixture,
             tmp_dir_abs,
             date,
@@ -286,7 +286,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-01,24276,24276,0,0',
             ])
 
-    def test_update_daily_per_project_single_csvs_3days_2014_11_02(self):
+    def test_update_per_project_single_csvs_3days_2014_11_02(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-3days-enwiki-day-times-100-plus-hour')
         date = datetime.date(2014, 11, 2)
@@ -296,7 +296,7 @@ class ProjectcountsTestCase(unittest.TestCase):
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
-        aggregator.update_daily_per_project_csvs(
+        aggregator.update_per_project_csvs_for_dates(
             fixture,
             tmp_dir_abs,
             date,
@@ -306,7 +306,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-02,48276,48276,0,0',
             ])
 
-    def test_update_daily_per_project_single_csvs_3days_2014_11_03(self):
+    def test_update_per_project_single_csvs_3days_2014_11_03(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-3days-enwiki-day-times-100-plus-hour')
         date = datetime.date(2014, 11, 3)
@@ -316,7 +316,7 @@ class ProjectcountsTestCase(unittest.TestCase):
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
-        aggregator.update_daily_per_project_csvs(
+        aggregator.update_per_project_csvs_for_dates(
             fixture,
             tmp_dir_abs,
             date,
@@ -326,7 +326,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-03,72276,72276,0,0',
             ])
 
-    def test_update_daily_per_project_single_csvs_3days_prefilled(self):
+    def test_update_per_project_single_csvs_3days_prefilled(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-3days-enwiki-day-times-100-plus-hour')
         date = datetime.date(2014, 11, 2)
@@ -339,7 +339,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-01,5,6,7,8',
             ])
 
-        aggregator.update_daily_per_project_csvs(
+        aggregator.update_per_project_csvs_for_dates(
             fixture,
             tmp_dir_abs,
             date,
@@ -351,7 +351,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-03,1,2,3,4',
             ])
 
-    def test_update_daily_per_project_single_csvs_3days_doubled(self):
+    def test_update_per_project_single_csvs_3days_doubled(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-3days-enwiki-day-times-100-plus-hour')
         date = datetime.date(2014, 11, 2)
@@ -366,13 +366,13 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         nose.tools.assert_raises(
             RuntimeError,
-            aggregator.update_daily_per_project_csvs,
+            aggregator.update_per_project_csvs_for_dates,
             fixture,
             tmp_dir_abs,
             date,
             date)
 
-    def test_update_daily_per_project_single_csvs_3days_prefilled_range(self):
+    def test_update_per_project_single_csvs_3days_prefilled_range(self):
         fixture = os.path.join(FIXTURES_DIR_ABS,
                                '2014-11-3days-enwiki-day-times-100-plus-hour')
         first_date = datetime.date(2014, 11, 1)
@@ -383,7 +383,7 @@ class ProjectcountsTestCase(unittest.TestCase):
         enwiki_file_abs = os.path.join(tmp_dir_abs, 'enwiki.csv')
         self.create_empty_file(enwiki_file_abs)
 
-        aggregator.update_daily_per_project_csvs(
+        aggregator.update_per_project_csvs_for_dates(
             fixture,
             tmp_dir_abs,
             first_date,
@@ -407,7 +407,7 @@ class ProjectcountsTestCase(unittest.TestCase):
             '2014-11-01,1,2,3,4'
             ])
 
-        aggregator.update_daily_per_project_csvs(
+        aggregator.update_per_project_csvs_for_dates(
             fixture,
             tmp_dir_abs,
             date,
@@ -432,7 +432,7 @@ class ProjectcountsTestCase(unittest.TestCase):
 
         nose.tools.assert_raises(
             RuntimeError,
-            aggregator.update_daily_per_project_csvs,
+            aggregator.update_per_project_csvs_for_dates,
             fixture,
             tmp_dir_abs,
             date,

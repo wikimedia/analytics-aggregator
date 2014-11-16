@@ -123,8 +123,9 @@ def get_daily_count(source_dir_abs, webstatscollector_abbreviation, date):
     return date_data.get(webstatscollector_abbreviation, 0)
 
 
-def update_daily_per_project_csvs(source_dir_abs, target_dir_abs, first_date,
-                                  last_date, force_recomputation=False):
+def update_per_project_csvs_for_dates(
+        source_dir_abs, target_dir_abs, first_date, last_date,
+        force_recomputation=False):
     """Updates daily per project CSVs from hourly projectcounts files.
 
     The existing per project CSV files in target_dir_abs are updated with daily

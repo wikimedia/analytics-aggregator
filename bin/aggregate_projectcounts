@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Aggregates Wikimedia's hourly projectcount files into daily per project files
+Aggregates Wikimedia's hourly projectcount files into per project CSVs
 
 Usage: aggregate_projectcounts [--source SOURCE_DIR] [--target TARGET_DIR]
            [--first-date FIRST_DATE] [--last-date LAST_DATE] [--date DATE]
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         run_git(['pull', '--quiet'])
         run_git(['reset', '--quiet', '--hard', 'origin/master'])
 
-    aggregator.update_daily_per_project_csvs(
+    aggregator.update_per_project_csvs_for_dates(
         source_dir_abs,
         target_dir_abs,
         first_date,
