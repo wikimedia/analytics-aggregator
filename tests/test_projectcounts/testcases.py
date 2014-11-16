@@ -76,6 +76,7 @@ class ProjectcountsTestCase(unittest.TestCase):
                 pass
 
     def setUp(self):
+        super(ProjectcountsTestCase, self).setUp()
         aggregator.clear_cache()
 
     def tearDown(self):
@@ -86,3 +87,5 @@ class ProjectcountsTestCase(unittest.TestCase):
                 shutil.rmtree(tmp_dir_abs)
         except AttributeError:
             pass
+        finally:
+            super(ProjectcountsTestCase, self).tearDown()
