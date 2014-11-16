@@ -33,6 +33,9 @@ FIXTURES_DIR_ABS = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class ProjectcountsTestCase(unittest.TestCase):
+    def get_fixture_dir_abs(self, fixture_name):
+        return os.path.join(FIXTURES_DIR_ABS, fixture_name)
+
     def create_tmp_dir_abs(self):
         # Since we have to have the file visible in the file system, we cannot
         # use *TemporaryFile, and have to resort to mkdtemp
@@ -90,32 +93,33 @@ class ProjectcountsTestCase(unittest.TestCase):
 class BasicTestCase(ProjectcountsTestCase):
     """TestCase for helper functions"""
     def test_aggregate_for_date_missing_hours_2014_11_01(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-missing-hours')
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
         date = datetime.date(2014, 11, 1)
 
         nose.tools.assert_raises(RuntimeError,
                                  aggregator.aggregate_for_date, fixture, date)
 
     def test_aggregate_for_date_missing_hours_2014_11_02(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-missing-hours')
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
         date = datetime.date(2014, 11, 2)
 
         nose.tools.assert_raises(RuntimeError,
                                  aggregator.aggregate_for_date, fixture, date)
 
     def test_aggregate_for_date_missing_hours_2014_11_03(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-missing-hours')
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
         date = datetime.date(2014, 11, 3)
 
         nose.tools.assert_raises(RuntimeError,
                                  aggregator.aggregate_for_date, fixture, date)
 
     def test_aggregate_for_date_enwiki_different_per_day_1(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 1)
 
         actual = aggregator.aggregate_for_date(fixture, date)
@@ -127,8 +131,9 @@ class BasicTestCase(ProjectcountsTestCase):
         self.assertEquals(actual, expected)
 
     def test_aggregate_for_date_enwiki_different_per_day_2(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 2)
 
         actual = aggregator.aggregate_for_date(fixture, date)
@@ -140,8 +145,9 @@ class BasicTestCase(ProjectcountsTestCase):
         self.assertEquals(actual, expected)
 
     def test_aggregate_for_date_enwiki_different_per_day_3(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 3)
 
         actual = aggregator.aggregate_for_date(fixture, date)
@@ -153,8 +159,8 @@ class BasicTestCase(ProjectcountsTestCase):
         self.assertEquals(actual, expected)
 
     def test_aggregate_for_date_different_wiki(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-different-wikis')
+        fixture = self.get_fixture_dir_abs('2014-11-different-wikis')
+
         date = datetime.date(2014, 11, 1)
 
         actual = aggregator.aggregate_for_date(fixture, date)
@@ -164,8 +170,8 @@ class BasicTestCase(ProjectcountsTestCase):
         self.assertEquals(actual, expected)
 
     def test_get_daily_count_en(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-different-wikis')
+        fixture = self.get_fixture_dir_abs('2014-11-different-wikis')
+
         date = datetime.date(2014, 11, 1)
 
         actual = aggregator.get_daily_count(fixture, 'en', date)
@@ -173,8 +179,8 @@ class BasicTestCase(ProjectcountsTestCase):
         self.assertEquals(actual, 1)
 
     def test_get_daily_count_de(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-different-wikis')
+        fixture = self.get_fixture_dir_abs('2014-11-different-wikis')
+
         date = datetime.date(2014, 11, 1)
 
         actual = aggregator.get_daily_count(fixture, 'de', date)
@@ -182,8 +188,8 @@ class BasicTestCase(ProjectcountsTestCase):
         self.assertEquals(actual, 26)
 
     def test_get_daily_count_fr(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-different-wikis')
+        fixture = self.get_fixture_dir_abs('2014-11-different-wikis')
+
         date = datetime.date(2014, 11, 1)
 
         actual = aggregator.get_daily_count(fixture, 'fr', date)
@@ -191,8 +197,8 @@ class BasicTestCase(ProjectcountsTestCase):
         self.assertEquals(actual, 8)
 
     def test_get_daily_count_empty_abbreviation(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-different-wikis')
+        fixture = self.get_fixture_dir_abs('2014-11-different-wikis')
+
         date = datetime.date(2014, 11, 1)
 
         actual = aggregator.get_daily_count(fixture, 'foo', date)
@@ -203,8 +209,8 @@ class BasicTestCase(ProjectcountsTestCase):
 class ProjectAggregationTestCase(ProjectcountsTestCase):
     """TestCase for project aggregation functions"""
     def test_update_per_project_no_csvs(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-missing-hours')
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
         date = datetime.date(2014, 11, 1)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -213,8 +219,8 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
                                                      date, date)
 
     def test_update_per_project_single_csvs_missing_hours(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-missing-hours')
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
+
         date = datetime.date(2014, 11, 1)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -231,8 +237,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             date)
 
     def test_update_per_project_single_csvs_missing_hours_existing(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 1)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -253,8 +260,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             ])
 
     def test_update_per_project_single_csvs_3days_2014_11_01(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 1)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -273,8 +281,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             ])
 
     def test_update_per_project_single_csvs_3days_2014_11_02(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 2)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -293,8 +302,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             ])
 
     def test_update_per_project_single_csvs_3days_2014_11_03(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 3)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -313,8 +323,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             ])
 
     def test_update_per_project_single_csvs_3days_prefilled(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 2)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -338,8 +349,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             ])
 
     def test_update_per_project_single_csvs_3days_doubled(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 2)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -359,8 +371,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             date)
 
     def test_update_per_project_single_csvs_3days_prefilled_range(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         first_date = datetime.date(2014, 11, 1)
         last_date = datetime.date(2014, 11, 3)
 
@@ -382,8 +395,9 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             ])
 
     def test_update_daily_forced_recomputation(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS,
-                               '2014-11-3days-enwiki-day-times-100-plus-hour')
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour')
+
         date = datetime.date(2014, 11, 1)
 
         tmp_dir_abs = self.create_tmp_dir_abs()
@@ -405,7 +419,7 @@ class ProjectAggregationTestCase(ProjectcountsTestCase):
             ])
 
     def test_update_daily_forced_recomputation_missing_hours(self):
-        fixture = os.path.join(FIXTURES_DIR_ABS, '2014-11-missing-hours')
+        fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
 
         date = datetime.date(2014, 11, 1)
 
