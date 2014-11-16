@@ -21,12 +21,12 @@
 """
 
 import aggregator
-import projectcounts_testcases
+import testcases
 import datetime
 import nose
 
 
-class BasicTestCase(projectcounts_testcases.ProjectcountsTestCase):
+class BasicTestCase(testcases.ProjectcountsTestCase):
     """TestCase for helper functions"""
     def test_aggregate_for_date_missing_hours_2014_11_01(self):
         fixture = self.get_fixture_dir_abs('2014-11-missing-hours')

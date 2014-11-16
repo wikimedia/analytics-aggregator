@@ -21,13 +21,13 @@
 """
 
 import aggregator
-import projectcounts_testcases
+import testcases
 import os
 import datetime
 import nose
 
 
-class MonitoringTestCase(projectcounts_testcases.ProjectcountsTestCase):
+class MonitoringTestCase(testcases.ProjectcountsTestCase):
     """TestCase for monitoring functions"""
     def create_valid_aggregated_projects(self, tmp_dir_abs):
         today = datetime.date.today()

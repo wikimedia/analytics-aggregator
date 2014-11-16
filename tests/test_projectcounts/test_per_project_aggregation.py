@@ -22,14 +22,13 @@
 """
 
 import aggregator
-import projectcounts_testcases
+import testcases
 import os
 import datetime
 import nose
 
 
-class ProjectAggregationTestCase(
-        projectcounts_testcases.ProjectcountsTestCase):
+class ProjectAggregationTestCase(testcases.ProjectcountsTestCase):
     """TestCase for project aggregation functions"""
     def test_update_per_project_no_csvs(self):
         fixture = self.get_fixture_dir_abs('2014-11-missing-hours')
