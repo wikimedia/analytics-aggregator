@@ -51,6 +51,8 @@ WEBSTATSCOLLECTOR_SUFFIX_ABBREVIATIONS = [
     ('wiki', ''),
 ]
 
+CSV_LINE_ENDING = '\r\n'
+
 
 def parse_string_to_date(date_str):
     """Parse a string into a datetime.date.
@@ -141,3 +143,64 @@ def dbname_to_webstatscollector_abbreviation(dbname, site='desktop'):
 
             return abbreviation
     return None
+
+
+def parse_csv_to_first_column_dict(csv_file_abs):
+    """Parses a csv to a dictionary indexed by the first column
+
+    The returned dictionary is indexed by a row's first column. And the
+    corresponding value is the /whole/ line.
+
+    If the file does not exist, the empty dictionary is returned.
+
+    Rows starting in 'Date' are ignored.
+
+    In case two different rows have the same first column, a RuntimeError gets
+    raised.
+
+    :param csv_file_abs: Absolute file name of the CSV that should get parsed.
+    """
+    csv_data = {}
+
+    if os.path.isfile(csv_file_abs):
+        with open(csv_file_abs, 'r') as csv_file:
+            for line in csv_file:
+                first_column = line.split(',')[0]
+                if first_column in csv_data:
+                    raise RuntimeError(
+                        "CSV contains at least two rows starting in '%s'" % (
+                            first_column))
+
+                if first_column != 'Date':
+                    # No header line
+                    csv_data[first_column] = line.strip() + CSV_LINE_ENDING
+    return csv_data
+
+
+def write_dict_values_sorted_to_csv(csv_file_abs, csv_data, header=None):
+    """
+    Writes a dictionary's values sorted to a file.
+
+    :param csv_file_abs: Absolute file name of where to wrie the csv data to.
+    :param csv_file_abs: The csv data to write. Needs to be a dictionary.
+    :param header: If given, gets used as header for the file.
+    """
+    with open(csv_file_abs, 'w') as csv_file:
+        if header:
+            csv_file.write('%s%s' % (header, CSV_LINE_ENDING))
+        csv_file.writelines(sorted(csv_data.itervalues()))
+
+
+def update_csv_data_dict(csv_data, first_column, *other_columns):
+    """
+    Update a csv dictionary for a given first column
+
+    :param csv_data: The csv data dictionary to add the row to.
+    :param first_column: The first column of the row to add.
+    :param *other_columns: The further columns of the row to add.
+    """
+    line = first_column
+    for column in other_columns:
+        line += ',%s' % (column)
+    csv_data[first_column] = line + CSV_LINE_ENDING
+    return csv_data

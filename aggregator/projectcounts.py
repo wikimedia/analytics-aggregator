@@ -30,8 +30,6 @@ import util
 PROJECTCOUNTS_STRFTIME_PATTERN = ('%%Y%s%%Y-%%m%sprojectcounts-%%Y%%m%%d-'
                                   '%%H0000' % (os.sep, os.sep))
 
-CSV_LINE_ENDING = '\r\n'
-
 cache = {}
 
 
@@ -150,21 +148,10 @@ def update_per_project_csvs_for_dates(
             target_dir_abs, '*.csv'))):
         logging.info("Updating csv '%s'" % (csv_file_abs))
 
-        csv_data = {}
-
         dbname = os.path.basename(csv_file_abs)
         dbname = dbname.rsplit('.csv', 1)[0]
 
-        with open(csv_file_abs, 'r') as csv_file:
-            for line in csv_file:
-                date_str = line.split(',')[0]
-                if date_str in csv_data:
-                    raise RuntimeError(
-                        "CSV contains the date '%s' twice" % (date_str))
-
-                if date_str != 'Date':
-                    # No header line
-                    csv_data[date_str] = line.strip() + CSV_LINE_ENDING
+        csv_data = util.parse_csv_to_first_column_dict(csv_file_abs)
 
         for date in util.generate_dates(first_date, last_date):
             date_str = date.isoformat()
@@ -190,18 +177,18 @@ def update_per_project_csvs_for_dates(
                     source_dir_abs, abbreviation, date)
 
                 # injecting obtained data
-                csv_data[date_str] = '%s,%d,%d,%d,%d%s' % (
+                util.update_csv_data_dict(
+                    csv_data,
                     date_str,
                     count_desktop + count_mobile + count_zero,
                     count_desktop,
                     count_mobile,
-                    count_zero,
-                    CSV_LINE_ENDING)
+                    count_zero)
 
-        with open(csv_file_abs, 'w') as csv_file:
-            csv_file.write('Date,Total,Desktop site,Mobile site,Zero site%s'
-                           % (CSV_LINE_ENDING))
-            csv_file.writelines(sorted(csv_data.itervalues()))
+        util.write_dict_values_sorted_to_csv(
+            csv_file_abs,
+            csv_data,
+            header='Date,Total,Desktop site,Mobile site,Zero site')
 
 
 def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):

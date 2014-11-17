@@ -25,6 +25,9 @@ import unittest
 import nose
 import datetime
 import os
+import tempfile
+
+FIXTURES_DIR_ABS = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class UtilTestCase(unittest.TestCase):
@@ -229,3 +232,179 @@ class UtilTestCase(unittest.TestCase):
         actual = aggregator.dbname_to_webstatscollector_abbreviation(
             'foo')
         self.assertEqual(actual, None)
+
+    def test_update_csv_data_dict_single_column(self):
+        csv_data = {}
+        actual = aggregator.update_csv_data_dict(csv_data, '2014-06-12')
+        self.assertEqual(actual, {
+            '2014-06-12': '2014-06-12\r\n'
+            })
+
+    def test_update_csv_data_dict_two_columns(self):
+        csv_data = {}
+        actual = aggregator.update_csv_data_dict(csv_data, '2014-06-12', '47')
+        self.assertEqual(actual, {
+            '2014-06-12': '2014-06-12,47\r\n'
+            })
+
+    def test_update_csv_data_dict_three_columns(self):
+        csv_data = {}
+        actual = aggregator.update_csv_data_dict(csv_data, '2014-06-12', '47',
+                                                 '4711')
+        self.assertEqual(actual, {
+            '2014-06-12': '2014-06-12,47,4711\r\n'
+            })
+
+
+class FileSystemUtilTestCase(unittest.TestCase):
+    def get_fixture_abs(self, fixture_name):
+        return os.path.join(FIXTURES_DIR_ABS, fixture_name)
+
+    def setUp(self):
+        super(FileSystemUtilTestCase, self).setUp()
+        file_tuple = tempfile.mkstemp()
+        os.close(file_tuple[0])
+        self.temp_file_abs = file_tuple[1]
+
+    def tearDown(self):
+        try:
+            os.unlink(self.temp_file_abs)
+        finally:
+            super(FileSystemUtilTestCase, self).tearDown()
+
+    def assert_temp_file_content_equals(self, expected_lines):
+        with open(self.temp_file_abs, 'r') as file:
+            for expected_line in expected_lines:
+                try:
+                    self.assertEquals(file.next(), expected_line +
+                                      aggregator.CSV_LINE_ENDING)
+                except StopIteration:
+                    self.fail("File '%s' is missing the line:\n%s" % (
+                        self.temp_file_abs, expected_line))
+            try:
+                extra_line = file.next()
+                self.fail("More lines than expected in file '%s'. First "
+                          "extra line:\n%s" % (self.temp_file_abs, extra_line))
+            except StopIteration:
+                pass
+
+    def test_csv_parser_non_existing_file(self):
+        temp_dir_abs = tempfile.mkdtemp()
+        try:
+            temp_file_abs = os.path.join(temp_dir_abs, "foo.csv")
+
+            actual = aggregator.parse_csv_to_first_column_dict(temp_file_abs)
+            self.assertEqual(actual, {})
+        finally:
+            os.rmdir(temp_dir_abs)
+
+    def test_csv_parser_empty_file(self):
+        actual = aggregator.parse_csv_to_first_column_dict(self.temp_file_abs)
+        self.assertEqual(actual, {})
+
+    def test_csv_parser_small_without_header(self):
+        csv_file_abs = self.get_fixture_abs('csv_small_without_header.csv')
+
+        actual = aggregator.parse_csv_to_first_column_dict(csv_file_abs)
+
+        self.assertEqual(actual, {
+            '2014-05-12': '2014-05-12,1,2\r\n',
+            '2014-05-13': '2014-05-13,3,4\r\n',
+            })
+
+    def test_csv_parser_small_with_header(self):
+        csv_file_abs = self.get_fixture_abs('csv_small_with_header.csv')
+
+        actual = aggregator.parse_csv_to_first_column_dict(csv_file_abs)
+
+        self.assertEqual(actual, {
+            '2014-05-12': '2014-05-12,1,2\r\n',
+            '2014-05-13': '2014-05-13,3,4\r\n',
+            })
+
+    def test_csv_parser_trailing_CR(self):
+        csv_file_abs = self.get_fixture_abs(
+            'csv_with_different_line_endings.csv')
+
+        actual = aggregator.parse_csv_to_first_column_dict(csv_file_abs)
+
+        self.assertEqual(actual, {
+            '2014-05-12': '2014-05-12,foo\r\n',
+            '2014-05-13': '2014-05-13,bar\r\n',
+            '2014-05-14': '2014-05-14,baz\r\n',
+            '2014-05-15': '2014-05-15,quux\r\n',
+            })
+
+    def test_csv_writer_empty_dict_without_header(self):
+        csv_data = {}
+
+        aggregator.write_dict_values_sorted_to_csv(
+            self.temp_file_abs, csv_data)
+
+        self.assert_temp_file_content_equals([])
+
+    def test_csv_writer_empty_dict_with_header(self):
+        csv_data = {}
+
+        aggregator.write_dict_values_sorted_to_csv(
+            self.temp_file_abs, csv_data, header="Foo")
+
+        self.assert_temp_file_content_equals(["Foo"])
+
+    def test_csv_writer_simple_dict_without_header(self):
+        csv_data = {
+            "2014-05-12": "2014-05-12,1,2\r\n",
+            "2014-05-13": "2014-05-13,3,4\r\n",
+            }
+
+        aggregator.write_dict_values_sorted_to_csv(
+            self.temp_file_abs, csv_data)
+
+        self.assert_temp_file_content_equals([
+            "2014-05-12,1,2",
+            "2014-05-13,3,4",
+            ])
+
+    def test_csv_writer_simple_dict_without_header_reverse(self):
+        csv_data = {
+            "2014-05-13": "2014-05-13,3,4\r\n",
+            "2014-05-12": "2014-05-12,1,2\r\n",
+            }
+
+        aggregator.write_dict_values_sorted_to_csv(
+            self.temp_file_abs, csv_data)
+
+        self.assert_temp_file_content_equals([
+            "2014-05-12,1,2",
+            "2014-05-13,3,4",
+            ])
+
+    def test_csv_writer_simple_dict_wit_header(self):
+        csv_data = {
+            "2014-05-12": "2014-05-12,1,2\r\n",
+            "2014-05-13": "2014-05-13,3,4\r\n",
+            }
+
+        aggregator.write_dict_values_sorted_to_csv(
+            self.temp_file_abs, csv_data, header="Date,CountA,CountB")
+
+        self.assert_temp_file_content_equals([
+            "Date,CountA,CountB",
+            "2014-05-12,1,2",
+            "2014-05-13,3,4",
+            ])
+
+    def test_csv_writer_simple_dict_with_header_reverse(self):
+        csv_data = {
+            "2014-05-13": "2014-05-13,3,4\r\n",
+            "2014-05-12": "2014-05-12,1,2\r\n",
+            }
+
+        aggregator.write_dict_values_sorted_to_csv(
+            self.temp_file_abs, csv_data, header="Date,CountA,CountB")
+
+        self.assert_temp_file_content_equals([
+            "Date,CountA,CountB",
+            "2014-05-12,1,2",
+            "2014-05-13,3,4",
+            ])
