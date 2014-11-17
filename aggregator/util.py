@@ -173,7 +173,7 @@ def parse_csv_to_first_column_dict(csv_file_abs):
 
                 if first_column != 'Date':
                     # No header line
-                    csv_data[first_column] = line.strip() + CSV_LINE_ENDING
+                    csv_data[first_column] = line.strip()
     return csv_data
 
 
@@ -188,7 +188,8 @@ def write_dict_values_sorted_to_csv(csv_file_abs, csv_data, header=None):
     with open(csv_file_abs, 'w') as csv_file:
         if header:
             csv_file.write('%s%s' % (header, CSV_LINE_ENDING))
-        csv_file.writelines(sorted(csv_data.itervalues()))
+        csv_file.writelines([line + CSV_LINE_ENDING
+                             for line in sorted(csv_data.itervalues())])
 
 
 def update_csv_data_dict(csv_data, first_column, *other_columns):
@@ -202,5 +203,5 @@ def update_csv_data_dict(csv_data, first_column, *other_columns):
     line = first_column
     for column in other_columns:
         line += ',%s' % (column)
-    csv_data[first_column] = line + CSV_LINE_ENDING
+    csv_data[first_column] = line
     return csv_data

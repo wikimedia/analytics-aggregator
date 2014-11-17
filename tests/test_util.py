@@ -237,14 +237,14 @@ class UtilTestCase(unittest.TestCase):
         csv_data = {}
         actual = aggregator.update_csv_data_dict(csv_data, '2014-06-12')
         self.assertEqual(actual, {
-            '2014-06-12': '2014-06-12\r\n'
+            '2014-06-12': '2014-06-12'
             })
 
     def test_update_csv_data_dict_two_columns(self):
         csv_data = {}
         actual = aggregator.update_csv_data_dict(csv_data, '2014-06-12', '47')
         self.assertEqual(actual, {
-            '2014-06-12': '2014-06-12,47\r\n'
+            '2014-06-12': '2014-06-12,47'
             })
 
     def test_update_csv_data_dict_three_columns(self):
@@ -252,7 +252,7 @@ class UtilTestCase(unittest.TestCase):
         actual = aggregator.update_csv_data_dict(csv_data, '2014-06-12', '47',
                                                  '4711')
         self.assertEqual(actual, {
-            '2014-06-12': '2014-06-12,47,4711\r\n'
+            '2014-06-12': '2014-06-12,47,4711'
             })
 
 
@@ -308,8 +308,8 @@ class FileSystemUtilTestCase(unittest.TestCase):
         actual = aggregator.parse_csv_to_first_column_dict(csv_file_abs)
 
         self.assertEqual(actual, {
-            '2014-05-12': '2014-05-12,1,2\r\n',
-            '2014-05-13': '2014-05-13,3,4\r\n',
+            '2014-05-12': '2014-05-12,1,2',
+            '2014-05-13': '2014-05-13,3,4',
             })
 
     def test_csv_parser_small_with_header(self):
@@ -318,8 +318,8 @@ class FileSystemUtilTestCase(unittest.TestCase):
         actual = aggregator.parse_csv_to_first_column_dict(csv_file_abs)
 
         self.assertEqual(actual, {
-            '2014-05-12': '2014-05-12,1,2\r\n',
-            '2014-05-13': '2014-05-13,3,4\r\n',
+            '2014-05-12': '2014-05-12,1,2',
+            '2014-05-13': '2014-05-13,3,4',
             })
 
     def test_csv_parser_trailing_CR(self):
@@ -329,10 +329,10 @@ class FileSystemUtilTestCase(unittest.TestCase):
         actual = aggregator.parse_csv_to_first_column_dict(csv_file_abs)
 
         self.assertEqual(actual, {
-            '2014-05-12': '2014-05-12,foo\r\n',
-            '2014-05-13': '2014-05-13,bar\r\n',
-            '2014-05-14': '2014-05-14,baz\r\n',
-            '2014-05-15': '2014-05-15,quux\r\n',
+            '2014-05-12': '2014-05-12,foo',
+            '2014-05-13': '2014-05-13,bar',
+            '2014-05-14': '2014-05-14,baz',
+            '2014-05-15': '2014-05-15,quux',
             })
 
     def test_csv_writer_empty_dict_without_header(self):
@@ -353,8 +353,8 @@ class FileSystemUtilTestCase(unittest.TestCase):
 
     def test_csv_writer_simple_dict_without_header(self):
         csv_data = {
-            "2014-05-12": "2014-05-12,1,2\r\n",
-            "2014-05-13": "2014-05-13,3,4\r\n",
+            "2014-05-12": "2014-05-12,1,2",
+            "2014-05-13": "2014-05-13,3,4",
             }
 
         aggregator.write_dict_values_sorted_to_csv(
@@ -367,8 +367,8 @@ class FileSystemUtilTestCase(unittest.TestCase):
 
     def test_csv_writer_simple_dict_without_header_reverse(self):
         csv_data = {
-            "2014-05-13": "2014-05-13,3,4\r\n",
-            "2014-05-12": "2014-05-12,1,2\r\n",
+            "2014-05-13": "2014-05-13,3,4",
+            "2014-05-12": "2014-05-12,1,2",
             }
 
         aggregator.write_dict_values_sorted_to_csv(
@@ -381,8 +381,8 @@ class FileSystemUtilTestCase(unittest.TestCase):
 
     def test_csv_writer_simple_dict_wit_header(self):
         csv_data = {
-            "2014-05-12": "2014-05-12,1,2\r\n",
-            "2014-05-13": "2014-05-13,3,4\r\n",
+            "2014-05-12": "2014-05-12,1,2",
+            "2014-05-13": "2014-05-13,3,4",
             }
 
         aggregator.write_dict_values_sorted_to_csv(
@@ -396,8 +396,8 @@ class FileSystemUtilTestCase(unittest.TestCase):
 
     def test_csv_writer_simple_dict_with_header_reverse(self):
         csv_data = {
-            "2014-05-13": "2014-05-13,3,4\r\n",
-            "2014-05-12": "2014-05-12,1,2\r\n",
+            "2014-05-13": "2014-05-13,3,4",
+            "2014-05-12": "2014-05-12,1,2",
             }
 
         aggregator.write_dict_values_sorted_to_csv(
