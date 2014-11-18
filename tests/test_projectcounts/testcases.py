@@ -101,3 +101,7 @@ class ProjectcountsDataTestCase(ProjectcountsTestCase):
 
         self.daily_dir_abs = os.path.join(self.data_dir_abs, 'daily')
         os.mkdir(self.daily_dir_abs)
+
+        self.weekly_dir_abs = os.path.join(self.data_dir_abs,
+                                           'weekly_rescaled')
+        os.mkdir(self.weekly_dir_abs)

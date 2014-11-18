@@ -184,6 +184,115 @@ def update_daily_csv(target_dir_abs, dbname, csv_data_input, first_date,
         header=CSV_HEADER)
 
 
+def rescale_counts(csv_data, dates, bad_dates, rescale_to):
+    """Extracts relevant dates from CSV data, sums them up, and rescales them.
+
+    If the dates only cover bad dates, None is returned.
+
+    All dates are expected to have the same number of columns. In case they
+    have not, the first good date is taken as reference. Missing columns for
+    good dates are assumed to be 0.
+
+    Upon other errors, a RuntimeError is raised.
+
+    The rescaled counts are returned as list of integers.
+
+    :param csv_data_input: The data dict to get data from
+    :param dates: The dates to sum up counts for
+    :param bad_dates: List of dates considered having bad data.
+    :param rescale_to: Rescale the good entries to this many entries.
+    """
+    ret = None
+    aggregations = 0
+    for date in dates:
+        if date in bad_dates:
+            continue
+        date_str = date.isoformat()
+        try:
+            csv_line_items = csv_data[date_str].split(',')
+        except KeyError:
+            raise RuntimeError("No data for '%s'" % (date_str))
+        del csv_line_items[0]  # getting rid of date column
+        if ret is None:
+            ret = [0 for i in range(len(csv_line_items))]
+        for i in range(len(ret)):
+            try:
+                ret[i] += int(csv_line_items[i])
+            except IndexError:
+                # csv_line_items has less items than the first good row.
+                # We assume 0.
+                pass
+        aggregations += 1
+
+    if ret is not None:
+        # Since we found readings, rescale.
+        ret = [(ret[i] * rescale_to) / aggregations for i in range(len(ret))]
+    return ret
+
+
+def update_weekly_csv(target_dir_abs, dbname, csv_data_input, first_date,
+                      last_date, bad_dates=[], force_recomputation=False):
+    """Updates weekly per project CSVs from a csv data dictionary.
+
+    The existing per project CSV files in target_dir_abs/weekly are updated for
+    all weeks where Sunday in in the date interval from first_date up to (and
+    including) last_date.
+
+    For weekly aggregations, a week's total data is rescaled to 7 days.
+
+    If a week under consideration contains no good date, it is removed.
+
+    Upon any error, the function raises an exception.
+
+    :param target_dir_abs: Absolute directory. CSVs are getting written to the
+        'weekly_rescaled' subdirectory of target_dir_abs.
+    :param dbname: The database name of the wiki to consider (E.g.: 'enwiki')
+    :param csv_data_input: The data dict to aggregate from
+    :param first_date: The first date to compute non-existing data for.
+    :param last_date: The last date to compute non-existing data for.
+    :param bad_dates: List of dates considered having bad data. (Default: [])
+    :param force_recomputation: If True, recompute data for the given days,
+        even if it is already in the CSV. (Default: False)
+    """
+    csv_dir_abs = os.path.join(target_dir_abs, 'weekly_rescaled')
+    if not os.path.exists(csv_dir_abs):
+        os.mkdir(csv_dir_abs)
+    csv_file_abs = os.path.join(csv_dir_abs, dbname + '.csv')
+
+    csv_data = util.parse_csv_to_first_column_dict(csv_file_abs)
+
+    for date in util.generate_dates(first_date, last_date):
+        if date.weekday() == 6:  # Sunday. End of ISO week
+            date_str = date.strftime('%GW%V')
+            logging.debug("Updating csv '%s' for date '%s'" % (
+                dbname, str(date)))
+            week_dates = set(date + datetime.timedelta(days=offset)
+                             for offset in range(-6, 1))
+            expected_good_dates = len(week_dates - set(bad_dates))
+            need_recomputation = force_recomputation
+            need_recomputation |= expected_good_dates != 7
+            need_recomputation |= date_str not in csv_data
+            if need_recomputation:
+                if expected_good_dates == 0:
+                    try:
+                        del csv_data[date_str]
+                    except KeyError:
+                        # No reading was there to remove. That's ok :-)
+                        pass
+                else:
+                    weekly_counts = rescale_counts(csv_data_input, week_dates,
+                                                   bad_dates, 7)
+                    util.update_csv_data_dict(
+                        csv_data,
+                        date_str,
+                        *weekly_counts)
+
+    util.write_dict_values_sorted_to_csv(
+        csv_file_abs,
+        csv_data,
+        header=CSV_HEADER)
+
+
 def update_per_project_csvs_for_dates(
         source_dir_abs, target_dir_abs, first_date, last_date,
         bad_dates=[], additional_aggregators=[], force_recomputation=False):
@@ -278,10 +387,22 @@ def update_per_project_csvs_for_dates(
                 force_recomputation=force_recomputation)
 
 
-def _get_validity_issues_for_aggregated_projectcounts_generic(csv_dir_abs):
+def _get_validity_issues_for_aggregated_projectcounts_generic(
+        csv_dir_abs, total_expected, desktop_site_expected,
+        mobile_site_expected, zero_site_expected, current_date_strs):
     """Gets a list of obvious validity issues for a directory of CSVs
 
     :param csv_dir_abs: Absolute directory of the per project CSVs.
+    :param total_expected: Expect at least that many views to overal on
+        big wikis.
+    :param desktop_site_expected: Expect at least that many views to desktop
+        site on big wikis.
+    :param mobile_site_expected: Expect at least that many views to mobile site
+        on big wikis.
+    :param zero_site_expected: Expect at least that many views to zero site on
+        big wikis.
+    :param current_date_strs: Expect one of those as date string of the final
+        item in the CSVs.
     """
     issues = []
     dbnames = []
@@ -296,7 +417,6 @@ def _get_validity_issues_for_aggregated_projectcounts_generic(csv_dir_abs):
         'itwiki',
         ]
 
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
     for csv_file_abs in sorted(glob.glob(os.path.join(csv_dir_abs, '*.csv'))):
         logging.info("Checking csv '%s'" % (csv_file_abs))
 
@@ -314,11 +434,9 @@ def _get_validity_issues_for_aggregated_projectcounts_generic(csv_dir_abs):
                 # LF, event though CRLF gets written.
                 last_line_split = last_line.split(',')
                 if len(last_line_split) == 5:
-                    # Check if last line is not older than yesterday
+                    # Check if last line is current.
                     try:
-                        last_line_date = util.parse_string_to_date(
-                            last_line_split[0])
-                        if last_line_date < yesterday:
+                        if last_line_split[0] not in current_date_strs:
                             issues.append("Last line of %s is too old "
                                           "'%s'" % (csv_file_abs, last_line))
                     except ValueError:
@@ -328,7 +446,7 @@ def _get_validity_issues_for_aggregated_projectcounts_generic(csv_dir_abs):
                     if dbname in big_wikis:
                         # Check total count
                         try:
-                            if int(last_line_split[1]) < 1000000:
+                            if int(last_line_split[1]) < total_expected:
                                 issues.append("Total count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
@@ -339,7 +457,7 @@ def _get_validity_issues_for_aggregated_projectcounts_generic(csv_dir_abs):
 
                         # Check desktop count
                         try:
-                            if int(last_line_split[2]) < 1000000:
+                            if int(last_line_split[2]) < desktop_site_expected:
                                 issues.append("Desktop count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
@@ -350,7 +468,7 @@ def _get_validity_issues_for_aggregated_projectcounts_generic(csv_dir_abs):
 
                         # Check mobile count
                         try:
-                            if int(last_line_split[3]) < 10000:
+                            if int(last_line_split[3]) < mobile_site_expected:
                                 issues.append("Mobile count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
@@ -361,7 +479,7 @@ def _get_validity_issues_for_aggregated_projectcounts_generic(csv_dir_abs):
 
                         # Check zero count
                         try:
-                            if int(last_line_split[4]) < 100:
+                            if int(last_line_split[4]) < zero_site_expected:
                                 issues.append("Zero count of last line of "
                                               "%s is too low '%s'" % (
                                                   csv_file_abs, last_line))
@@ -411,13 +529,32 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
     """
     issues = []
 
+    current_dates = [
+        datetime.date.today(),
+        util.parse_string_to_date('yesterday')
+        ]
+    logging.error(set(date.isoformat() for date in current_dates))
+    for x in set(date.isoformat() for date in current_dates):
+        logging.error(x)
     # daily_raw files
     issues.extend(_get_validity_issues_for_aggregated_projectcounts_generic(
         os.path.join(data_dir_abs, 'daily_raw'),
+        1000000, 1000000, 10000, 100,
+        set(date.isoformat() for date in current_dates)
         ))
 
     # daily files
     issues.extend(_get_validity_issues_for_aggregated_projectcounts_generic(
         os.path.join(data_dir_abs, 'daily'),
+        1000000, 1000000, 10000, 100,
+        set(date.isoformat() for date in current_dates)
+        ))
+
+    # weekly files
+    issues.extend(_get_validity_issues_for_aggregated_projectcounts_generic(
+        os.path.join(data_dir_abs, 'weekly_rescaled'),
+        10000000, 10000000, 100000, 1000,
+        set((date - datetime.timedelta(days=6)).strftime('%GW%V')
+            for date in current_dates)
         ))
     return issues

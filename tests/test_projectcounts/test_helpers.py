@@ -345,3 +345,259 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         # No hour files at all, so no count is expected
         self.assertEquals(actual, 0)
+
+    def test_rescale_counts_single_day(self):
+        dates = [datetime.date(2014, 8, 3)]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3'
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            1)
+
+        self.assertEquals(actual, [1, 2, 3])
+
+    def test_rescale_counts_more_days(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            3)
+
+        self.assertEquals(actual, [6000, 600, 60])
+
+    def test_rescale_counts_more_days_downscale_int(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3002,301,31',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            1)
+
+        self.assertEquals(actual, [2000, 200, 20])
+
+    def test_rescale_counts_more_days_upscale(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            5)
+
+        self.assertEquals(actual, [10000, 1000, 100])
+
+    def test_rescale_counts_more_days_bad_dates_middle(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = [
+            datetime.date(2014, 8, 5),
+            ]
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            5)
+
+        self.assertEquals(actual, [10000, 1000, 100])
+
+    def test_rescale_counts_more_days_bad_dates_borders(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 6),
+            ]
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            5)
+
+        self.assertEquals(actual, [10000, 1000, 100])
+
+    def test_rescale_counts_more_days_bad_dates_skew(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = [
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            5)
+
+        self.assertEquals(actual, [5000, 500, 50])
+
+    def test_rescale_counts_only_bad_dates(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = dates
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            5)
+
+        self.assertIsNone(actual)
+
+    def test_rescale_counts_no_data(self):
+        dates = [datetime.date(2014, 8, 4)]
+
+        csv_data = {}
+
+        bad_dates = []
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.rescale_counts,
+                                 csv_data,
+                                 dates,
+                                 bad_dates,
+                                 5)
+
+    def test_rescale_counts_no_data_for_date(self):
+        dates = [datetime.date(2014, 8, 4)]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3',
+            '2014-08-05': '2014-08-05,2000,200,20',
+        }
+
+        bad_dates = []
+
+        nose.tools.assert_raises(RuntimeError,
+                                 aggregator.rescale_counts,
+                                 csv_data,
+                                 dates,
+                                 bad_dates,
+                                 5)
+
+    def test_rescale_counts_more_days_missing_columns_upscale(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3,4,5',
+            '2014-08-04': '2014-08-04,1000,100,10',
+            '2014-08-05': '2014-08-05,2000,200,20',
+            '2014-08-06': '2014-08-06,3000,300',
+            '2014-08-07': '2014-08-07,1,2,3',
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            4)
+
+        self.assertEquals(actual, [8000, 800, 40])

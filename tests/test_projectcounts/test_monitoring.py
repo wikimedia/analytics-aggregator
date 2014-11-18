@@ -28,10 +28,35 @@ import nose
 import re
 
 
+@nose.tools.nottest
 class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
     """TestCase for monitoring functions"""
-    def create_valid_aggregated_projects(self):
+    def setUp(self):
+        super(MonitoringTestCase, self).setUp()
+        self.csv_dir_abs = self.data_dir_abs
+
+    def get_relevant_daily_date_strs(self):
         today = datetime.date.today()
+
+        for day_offset in range(-10, 0):
+            date = (today + datetime.timedelta(days=day_offset))
+            date_str = date.isoformat()
+            yield date_str
+
+    def get_relevant_weekly_date_strs(self):
+        today = datetime.date.today()
+
+        for day_offset in range(-30, 0):
+            date = (today + datetime.timedelta(days=day_offset))
+            if date.weekday() == 6:
+                date_str = date.strftime('%GW%V')
+                yield date_str
+
+    def get_relevant_date_strs(self):
+        for date_str in self.get_relevant_daily_date_strs():
+            yield date_str
+
+    def create_valid_aggregated_projects(self):
         for dbname in [
             'enwiki',
             'jawiki',
@@ -46,18 +71,18 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
                 csv_file_abs = os.path.join(
                     self.data_dir_abs, dir_rel, dbname + '.csv')
                 with open(csv_file_abs, 'w') as file:
-                    for day_offset in range(-10, 0):
-                        date = (today + datetime.timedelta(days=day_offset))
-                        date_str = date.isoformat()
+                    for date_str in self.get_relevant_daily_date_strs():
                         file.write(
                             '%s,137037034,123456789,12345678,1234567%s' % (
                                 date_str, aggregator.CSV_LINE_ENDING))
 
-
-class DailyRawMonitoringTestCase(MonitoringTestCase):
-    def setUp(self):
-        super(DailyRawMonitoringTestCase, self).setUp()
-        self.csv_dir_abs = self.daily_raw_dir_abs
+            csv_file_abs = os.path.join(
+                self.data_dir_abs, 'weekly_rescaled', dbname + '.csv')
+            with open(csv_file_abs, 'w') as file:
+                for date_str in self.get_relevant_weekly_date_strs():
+                    file.write(
+                        '%s,137037034,123456789,12345678,1234567%s' % (
+                            date_str, aggregator.CSV_LINE_ENDING))
 
     def assert_has_item_by_re(self, haystack, pattern):
         for straw in haystack:
@@ -113,16 +138,22 @@ class DailyRawMonitoringTestCase(MonitoringTestCase):
         nose.tools.assert_greater_equal(len(issues), 1)
         self.assert_has_item_by_re(issues, '[nN]o lines')
 
-    def test_validity_enwiki_no_today(self):
+    def test_validity_valid(self):
+        self.create_valid_aggregated_projects()
+
+        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
+            self.data_dir_abs)
+
+        self.assertEquals(issues, [])
+
+    def test_validity_enwiki_no_current(self):
         self.create_valid_aggregated_projects()
 
         enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
-        yesterday = aggregator.parse_string_to_date('yesterday')
         lines = []
-        for day_offset in range(-10, 0):
-            date = (yesterday + datetime.timedelta(days=day_offset))
-            date_str = date.isoformat()
+        for date_str in self.get_relevant_date_strs():
             lines.append('%s,135925923,123456789,12345678,123456' % (date_str))
+        del lines[-1]
         self.create_file(enwiki_file_abs, lines)
 
         issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
@@ -136,11 +167,8 @@ class DailyRawMonitoringTestCase(MonitoringTestCase):
         self.create_valid_aggregated_projects()
 
         enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
-        today = datetime.date.today()
         lines = []
-        for day_offset in range(-10, 0):
-            date = (today + datetime.timedelta(days=day_offset))
-            date_str = date.isoformat()
+        for date_str in self.get_relevant_date_strs():
             lines.append('%s,13580245,0,12345678,1234567' % (date_str))
         self.create_file(enwiki_file_abs, lines)
 
@@ -155,11 +183,8 @@ class DailyRawMonitoringTestCase(MonitoringTestCase):
         self.create_valid_aggregated_projects()
 
         enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
-        today = datetime.date.today()
         lines = []
-        for day_offset in range(-10, 0):
-            date = (today + datetime.timedelta(days=day_offset))
-            date_str = date.isoformat()
+        for date_str in self.get_relevant_date_strs():
             lines.append('%s,124691356,123456789,0,1234567' % (date_str))
         self.create_file(enwiki_file_abs, lines)
 
@@ -174,11 +199,8 @@ class DailyRawMonitoringTestCase(MonitoringTestCase):
         self.create_valid_aggregated_projects()
 
         enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
-        today = datetime.date.today()
         lines = []
-        for day_offset in range(-10, 0):
-            date = (today + datetime.timedelta(days=day_offset))
-            date_str = date.isoformat()
+        for date_str in self.get_relevant_date_strs():
             lines.append('%s,135802467,123456789,12345678,0' % (date_str))
         self.create_file(enwiki_file_abs, lines)
 
@@ -193,11 +215,8 @@ class DailyRawMonitoringTestCase(MonitoringTestCase):
         self.create_valid_aggregated_projects()
 
         enwiki_file_abs = os.path.join(self.csv_dir_abs, 'enwiki.csv')
-        today = datetime.date.today()
         lines = []
-        for day_offset in range(-10, 0):
-            date = (today + datetime.timedelta(days=day_offset))
-            date_str = date.isoformat()
+        for date_str in self.get_relevant_date_strs():
             lines.append('%s,200000000,123456789,12345678,123456' % (date_str))
         self.create_file(enwiki_file_abs, lines)
 
@@ -208,16 +227,27 @@ class DailyRawMonitoringTestCase(MonitoringTestCase):
         nose.tools.assert_greater_equal(len(issues), 1)
         self.assert_has_item_by_re(issues, '[tT]otal.*not.*sum')
 
-    def test_validity_valid(self):
-        self.create_valid_aggregated_projects()
 
-        issues = aggregator.get_validity_issues_for_aggregated_projectcounts(
-            self.data_dir_abs)
-
-        self.assertEquals(issues, [])
-
-
-class DailyMonitoringTestCase(DailyRawMonitoringTestCase):
+@nose.tools.istest
+class DailyRawMonitoringTestCase(MonitoringTestCase):
     def setUp(self):
         super(DailyRawMonitoringTestCase, self).setUp()
+        self.csv_dir_abs = self.daily_raw_dir_abs
+
+
+@nose.tools.istest
+class DailyMonitoringTestCase(DailyRawMonitoringTestCase):
+    def setUp(self):
+        super(DailyMonitoringTestCase, self).setUp()
         self.csv_dir_abs = self.daily_dir_abs
+
+
+@nose.tools.istest
+class WeeklyMonitoringTestCase(DailyRawMonitoringTestCase):
+    def setUp(self):
+        super(WeeklyMonitoringTestCase, self).setUp()
+        self.csv_dir_abs = self.weekly_dir_abs
+
+    def get_relevant_date_strs(self):
+        for date_str in self.get_relevant_weekly_date_strs():
+            yield date_str
