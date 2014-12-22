@@ -52,6 +52,14 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
                 date_str = date.strftime('%GW%V')
                 yield date_str
 
+    def get_relevant_monthly_date_strs(self):
+        today = datetime.date.today()
+
+        for day_offset in range(-90, 0):
+            date = (today + datetime.timedelta(days=day_offset))
+            if date.day == 1:
+                yield (date - datetime.timedelta(days=1)).strftime('%Y-%m')
+
     def get_relevant_date_strs(self):
         for date_str in self.get_relevant_daily_date_strs():
             yield date_str
@@ -80,6 +88,14 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
                 self.data_dir_abs, 'weekly_rescaled', dbname + '.csv')
             with open(csv_file_abs, 'w') as file:
                 for date_str in self.get_relevant_weekly_date_strs():
+                    file.write(
+                        '%s,137037034,123456789,12345678,1234567%s' % (
+                            date_str, aggregator.CSV_LINE_ENDING))
+
+            csv_file_abs = os.path.join(
+                self.data_dir_abs, 'monthly_rescaled', dbname + '.csv')
+            with open(csv_file_abs, 'w') as file:
+                for date_str in self.get_relevant_monthly_date_strs():
                     file.write(
                         '%s,137037034,123456789,12345678,1234567%s' % (
                             date_str, aggregator.CSV_LINE_ENDING))
@@ -250,4 +266,15 @@ class WeeklyMonitoringTestCase(DailyRawMonitoringTestCase):
 
     def get_relevant_date_strs(self):
         for date_str in self.get_relevant_weekly_date_strs():
+            yield date_str
+
+
+@nose.tools.istest
+class MonthlyMonitoringTestCase(DailyRawMonitoringTestCase):
+    def setUp(self):
+        super(MonthlyMonitoringTestCase, self).setUp()
+        self.csv_dir_abs = self.monthly_dir_abs
+
+    def get_relevant_date_strs(self):
+        for date_str in self.get_relevant_monthly_date_strs():
             yield date_str

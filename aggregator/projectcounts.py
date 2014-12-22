@@ -293,6 +293,72 @@ def update_weekly_csv(target_dir_abs, dbname, csv_data_input, first_date,
         header=CSV_HEADER)
 
 
+def update_monthly_csv(target_dir_abs, dbname, csv_data_input, first_date,
+                       last_date, bad_dates=[], force_recomputation=False):
+    """Updates monthly per project CSVs from a csv data dictionary.
+
+    The existing per project CSV files in target_dir_abs/monthly_rescaled are
+    updated for all months where the last day of the month is in the date
+    interval from first_date up to (and including) last_date.
+
+    For monthly aggregations, a month's total data is rescaled to 30 days.
+
+    If a month under consideration contains no good date, it is removed.
+
+    Upon any error, the function raises an exception.
+
+    :param target_dir_abs: Absolute directory. CSVs are getting written to the
+        'monthly_rescaled' subdirectory of target_dir_abs.
+    :param dbname: The database name of the wiki to consider (E.g.: 'enwiki')
+    :param csv_data_input: The data dict to aggregate from
+    :param first_date: The first date to compute non-existing data for.
+    :param last_date: The last date to compute non-existing data for.
+    :param bad_dates: List of dates considered having bad data. (Default: [])
+    :param force_recomputation: If True, recompute data for the given days,
+        even if it is already in the CSV. (Default: False)
+    """
+    csv_dir_abs = os.path.join(target_dir_abs, 'monthly_rescaled')
+    if not os.path.exists(csv_dir_abs):
+        os.mkdir(csv_dir_abs)
+    csv_file_abs = os.path.join(csv_dir_abs, dbname + '.csv')
+
+    csv_data = util.parse_csv_to_first_column_dict(csv_file_abs)
+
+    for date in util.generate_dates(first_date, last_date):
+        if (date + datetime.timedelta(days=1)).day == 1:
+            # date + 1 day is the first of a month, so date is the last of a
+            # month. Let's compute for this month
+            date_str = date.strftime('%Y-%m')
+            logging.debug("Updating csv '%s' for date '%s'" % (
+                dbname, date_str))
+            days_in_month = date.day
+            month_dates = set(datetime.date(date.year, date.month, day)
+                              for day in range(1, days_in_month+1))
+            expected_good_dates = len(month_dates - set(bad_dates))
+            need_recomputation = force_recomputation
+            need_recomputation |= expected_good_dates != days_in_month
+            need_recomputation |= date_str not in csv_data
+            if need_recomputation:
+                if expected_good_dates == 0:
+                    try:
+                        del csv_data[date_str]
+                    except KeyError:
+                        # No reading was there to remove. That's ok :-)
+                        pass
+                else:
+                    monthly_counts = rescale_counts(csv_data_input,
+                                                    month_dates, bad_dates, 30)
+                    util.update_csv_data_dict(
+                        csv_data,
+                        date_str,
+                        *monthly_counts)
+
+    util.write_dict_values_sorted_to_csv(
+        csv_file_abs,
+        csv_data,
+        header=CSV_HEADER)
+
+
 def update_per_project_csvs_for_dates(
         source_dir_abs, target_dir_abs, first_date, last_date,
         bad_dates=[], additional_aggregators=[], force_recomputation=False):
@@ -555,6 +621,17 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
         os.path.join(data_dir_abs, 'weekly_rescaled'),
         10000000, 10000000, 100000, 1000,
         set((date - datetime.timedelta(days=6)).strftime('%GW%V')
+            for date in current_dates)
+        ))
+
+    # monthly files
+    issues.extend(_get_validity_issues_for_aggregated_projectcounts_generic(
+        os.path.join(data_dir_abs, 'monthly_rescaled'),
+        50000000, 50000000, 500000, 5000,
+        set((
+            datetime.date(date.year, date.month, 1)
+            - datetime.timedelta(days=1)
+            ).strftime('%Y-%m')
             for date in current_dates)
         ))
     return issues
