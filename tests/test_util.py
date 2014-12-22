@@ -170,6 +170,11 @@ class UtilTestCase(unittest.TestCase):
             'wikidatawiki')
         self.assertEqual(actual, 'www.wd')
 
+    def test_dbname_to_webstatscollector_abbreviation_wikidata_mobile(self):
+        actual = aggregator.dbname_to_webstatscollector_abbreviation(
+            'wikidatawiki', 'mobile')
+        self.assertEqual(actual, 'm.wd')
+
     def test_dbname_to_webstatscollector_abbreviation_commons(self):
         actual = aggregator.dbname_to_webstatscollector_abbreviation(
             'commonswiki')

@@ -131,6 +131,12 @@ def dbname_to_webstatscollector_abbreviation(dbname, site='desktop'):
                     abbreviation_split.insert(1, 'm')
                 elif site == 'zero':
                     abbreviation_split.insert(1, 'zero')
+
+                # fix-up mobile site where desktop site is www, like
+                # www.m.wd to m.wd
+                if abbreviation_split[0] == 'www':
+                    del abbreviation_split[0]
+
                 abbreviation = '.'.join(abbreviation_split)
 
             return abbreviation
