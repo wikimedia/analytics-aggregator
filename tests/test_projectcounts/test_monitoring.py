@@ -60,6 +60,12 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
             if date.day == 1:
                 yield (date - datetime.timedelta(days=1)).strftime('%Y-%m')
 
+    def get_relevant_yearly_date_strs(self):
+        today = datetime.date.today()
+
+        for year_offset in range(-3, 0):
+            yield str(today.year + year_offset)
+
     def get_relevant_date_strs(self):
         for date_str in self.get_relevant_daily_date_strs():
             yield date_str
@@ -98,6 +104,14 @@ class MonitoringTestCase(testcases.ProjectcountsDataTestCase):
                 for date_str in self.get_relevant_monthly_date_strs():
                     file.write(
                         '%s,137037034,123456789,12345678,1234567%s' % (
+                            date_str, aggregator.CSV_LINE_ENDING))
+
+            csv_file_abs = os.path.join(
+                self.data_dir_abs, 'yearly_rescaled', dbname + '.csv')
+            with open(csv_file_abs, 'w') as file:
+                for date_str in self.get_relevant_yearly_date_strs():
+                    file.write(
+                        '%s,803037034,723456789,72345678,7234567%s' % (
                             date_str, aggregator.CSV_LINE_ENDING))
 
     def assert_has_item_by_re(self, haystack, pattern):
@@ -277,4 +291,15 @@ class MonthlyMonitoringTestCase(DailyRawMonitoringTestCase):
 
     def get_relevant_date_strs(self):
         for date_str in self.get_relevant_monthly_date_strs():
+            yield date_str
+
+
+@nose.tools.istest
+class YearlyMonitoringTestCase(DailyRawMonitoringTestCase):
+    def setUp(self):
+        super(YearlyMonitoringTestCase, self).setUp()
+        self.csv_dir_abs = self.yearly_dir_abs
+
+    def get_relevant_date_strs(self):
+        for date_str in self.get_relevant_yearly_date_strs():
             yield date_str

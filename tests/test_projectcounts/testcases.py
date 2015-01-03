@@ -109,3 +109,7 @@ class ProjectcountsDataTestCase(ProjectcountsTestCase):
         self.monthly_dir_abs = os.path.join(self.data_dir_abs,
                                             'monthly_rescaled')
         os.mkdir(self.monthly_dir_abs)
+
+        self.yearly_dir_abs = os.path.join(self.data_dir_abs,
+                                           'yearly_rescaled')
+        os.mkdir(self.yearly_dir_abs)

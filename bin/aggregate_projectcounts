@@ -62,6 +62,8 @@ This script computes the following aggregations (in separate sub-directories):
                                   7 days per week.
    TARGET_DIR/monthly_rescaled -- daily summed up per month, and rescaled to
                                   30 days per month.
+   TARGET_DIR/yearly_rescaled  -- daily summed up per year, and rescaled to
+                                  365 days per year.
 
 The bad dates are read from TARGET_DIR/BAD_DATES.csv. The first column
 in that CSV have to be dates, the other columns are ignored, and can
@@ -198,6 +200,7 @@ if __name__ == '__main__':
         aggregator.update_daily_csv,
         aggregator.update_weekly_csv,
         aggregator.update_monthly_csv,
+        aggregator.update_yearly_csv,
         ]
 
     aggregator.update_per_project_csvs_for_dates(
