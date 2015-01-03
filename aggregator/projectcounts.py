@@ -33,6 +33,8 @@ PROJECTCOUNTS_STRFTIME_PATTERN = ('%%Y%s%%Y-%%m%sprojectcounts-%%Y%%m%%d-'
 
 CSV_HEADER = 'Date,Total,Desktop site,Mobile site,Zero site'
 
+DATE_MOBILE_ADDED = datetime.date(2014, 9, 23)
+
 cache = {}
 
 
@@ -507,14 +509,18 @@ def update_per_project_csvs_for_dates(
                 count_zero = get_daily_count(
                     source_dir_abs, abbreviation, date, allow_bad_data)
 
+                count_total = count_desktop
+                if date >= DATE_MOBILE_ADDED:
+                    count_total += count_mobile + count_zero
+
                 # injecting obtained data
                 util.update_csv_data_dict(
                     csv_data,
                     date_str,
-                    count_desktop + count_mobile + count_zero,
+                    count_total,
                     count_desktop,
-                    count_mobile,
-                    count_zero)
+                    count_mobile if date >= DATE_MOBILE_ADDED else None,
+                    count_zero if date >= DATE_MOBILE_ADDED else None)
 
         util.write_dict_values_sorted_to_csv(
             csv_file_abs,
