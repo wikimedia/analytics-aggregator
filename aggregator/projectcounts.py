@@ -190,9 +190,8 @@ def rescale_counts(csv_data, dates, bad_dates, rescale_to):
 
     If the dates only cover bad dates, None is returned.
 
-    All dates are expected to have the same number of columns. In case they
-    have not, the first good date is taken as reference. Missing columns for
-    good dates are assumed to be 0.
+    Each column is rescaled separatedly.
+    Missing columns for good dates are not assumed to be 0.
 
     Upon other errors, a RuntimeError is raised.
 
@@ -204,7 +203,8 @@ def rescale_counts(csv_data, dates, bad_dates, rescale_to):
     :param rescale_to: Rescale the good entries to this many entries.
     """
     ret = None
-    aggregations = 0
+    aggregations = None
+    columns = 0
     for date in dates:
         if date in bad_dates:
             continue
@@ -214,20 +214,33 @@ def rescale_counts(csv_data, dates, bad_dates, rescale_to):
         except KeyError:
             raise RuntimeError("No data for '%s'" % (date_str))
         del csv_line_items[0]  # getting rid of date column
+
         if ret is None:
-            ret = [0 for i in range(len(csv_line_items))]
-        for i in range(len(ret)):
+            ret = []
+            aggregations = []
+
+        # Make sure we can fit csv_line_items's columns into the aggregations
+        while columns < len(csv_line_items):
+            ret.append(0)
+            aggregations.append(0)
+            columns += 1
+
+        for i in range(columns):
             try:
-                ret[i] += int(csv_line_items[i])
+                ret[i] += int(csv_line_items[i].strip())
+                aggregations[i] += 1
             except IndexError:
-                # csv_line_items has less items than the first good row.
-                # We assume 0.
+                # csv_line_times is shorter than ret.
                 pass
-        aggregations += 1
+            except ValueError:
+                # No valid reading. (E.g. the empty string)
+                pass
 
     if ret is not None:
         # Since we found readings, rescale.
-        ret = [(ret[i] * rescale_to) / aggregations for i in range(len(ret))]
+        ret = [(ret[i] * rescale_to) / aggregations[i] if aggregations[i]
+               else None
+               for i in range(columns)]
     return ret
 
 

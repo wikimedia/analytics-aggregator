@@ -577,7 +577,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
                                  bad_dates,
                                  5)
 
-    def test_rescale_counts_more_days_missing_columns_upscale(self):
+    def test_rescale_counts_zero_and_empty_columns(self):
         dates = [
             datetime.date(2014, 8, 4),
             datetime.date(2014, 8, 5),
@@ -585,11 +585,36 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             ]
 
         csv_data = {
-            '2014-08-03': '2014-08-03,1,2,3,4,5',
-            '2014-08-04': '2014-08-04,1000,100,10',
-            '2014-08-05': '2014-08-05,2000,200,20',
-            '2014-08-06': '2014-08-06,3000,300',
-            '2014-08-07': '2014-08-07,1,2,3',
+            '2014-08-03': '2014-08-03,100',
+            '2014-08-04': '2014-08-04,0,3,5,0,7,10,',
+            '2014-08-05': '2014-08-05,1,,  ,0,8,  ,',
+            '2014-08-06': '2014-08-06,2,4,6,0,9,0 ,',
+            '2014-08-07': '2014-08-07,11,12,13,14,15,16,17',
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            3)
+
+        self.assertEquals(actual, [3, 10, 16, 0, 24, 15, None])
+
+    def test_rescale_counts_zero_and_empty_columns_upscale(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,100',
+            '2014-08-04': '2014-08-04,0,3,5,0, , ,10,',
+            '2014-08-05': '2014-08-05,1,,  ,0,0,8,  ,',
+            '2014-08-06': '2014-08-06,2,4,6,0, ,9,0 ,',
+            '2014-08-07': '2014-08-07,11,12,13,14,15,16,17',
         }
 
         bad_dates = []
@@ -600,4 +625,29 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             4)
 
-        self.assertEquals(actual, [8000, 800, 40])
+        self.assertEquals(actual, [4, 14, 22, 0, 0, 34, 20, None])
+
+    def test_rescale_counts_shorter_second_column(self):
+        dates = [
+            datetime.date(2014, 8, 4),
+            datetime.date(2014, 8, 5),
+            datetime.date(2014, 8, 6),
+            ]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,100,200',
+            '2014-08-04': '2014-08-04,1,2',
+            '2014-08-05': '2014-08-05,3',
+            '2014-08-06': '2014-08-06,4,,',
+            '2014-08-07': '2014-08-07,300,400',
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            4)
+
+        self.assertEquals(actual, [10, 8, None])

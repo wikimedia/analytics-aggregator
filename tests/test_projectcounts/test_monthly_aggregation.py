@@ -293,3 +293,27 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-06,1,2,3,4',
             '2014-08,8,9,10,11',
             ])
+
+    def test_monthly_csv_zero_and_missing_data(self):
+        enwiki_file_abs = os.path.join(self.monthly_dir_abs, 'enwiki.csv')
+
+        first_date = datetime.date(2014, 7, 20)
+        last_date = datetime.date(2014, 7, 31)
+
+        csv_data = {
+            '2014-06-30': '2014-06-30,1,2,3,4',
+            '2014-08-01': '2014-08-01,5,6,7,8',
+            }
+        for day in range(1, 32):
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
+                                              % (day, day, day, day))
+
+        csv_data['2014-07-10'] = '2014-07-10,100000,0,10,1'
+        csv_data['2014-07-20'] = '2014-07-20,200000,2000,,1'
+
+        aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
+                                      first_date, last_date)
+
+        self.assert_file_content_equals(enwiki_file_abs, [
+            '2014-07,4800000,47032,476,30',
+            ])

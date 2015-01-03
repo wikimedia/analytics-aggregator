@@ -270,3 +270,28 @@ class WeeklyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014W26,1,2,3,4',
             '2014W28,8,9,10,11',
             ])
+
+    def test_weekly_csv_zero_and_missing_data(self):
+        enwiki_file_abs = os.path.join(self.weekly_dir_abs, 'enwiki.csv')
+
+        first_date = datetime.date(2014, 7, 1)
+        last_date = datetime.date(2014, 7, 7)
+
+        csv_data = {
+            '2014-06-29': '2014-06-29,1,2,3,4',
+            '2014-06-30': '2014-06-30,1000000,1000,1,1',
+            '2014-07-01': '2014-07-01,2000000,   0,2,1',
+            '2014-07-02': '2014-07-02,3000000,3000, ,1',
+            '2014-07-03': '2014-07-03,4000000,4000,4,1',
+            '2014-07-04': '2014-07-04,5000000,5000,5,1',
+            '2014-07-05': '2014-07-05,6000000,6000,6,1',
+            '2014-07-06': '2014-07-06,7000000,7000,7,1',
+            '2014-07-07': '2014-07-07,5,6,7,8',
+            }
+
+        aggregator.update_weekly_csv(self.data_dir_abs, 'enwiki', csv_data,
+                                     first_date, last_date)
+
+        self.assert_file_content_equals(enwiki_file_abs, [
+            '2014W27,28000000,26000,29,7',
+            ])

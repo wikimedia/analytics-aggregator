@@ -202,6 +202,6 @@ def update_csv_data_dict(csv_data, first_column, *other_columns):
     """
     line = first_column
     for column in other_columns:
-        line += ',%s' % (column)
+        line += ',%s' % ('' if column is None else column)
     csv_data[first_column] = line
     return csv_data

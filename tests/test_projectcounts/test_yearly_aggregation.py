@@ -277,3 +277,30 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2013,1,2,3,4',
             '2015,8,9,10,11',
             ])
+
+    def test_yearly_csv_zero_and_missing_data(self):
+        enwiki_file_abs = os.path.join(self.yearly_dir_abs, 'enwiki.csv')
+
+        first_date = datetime.date(2014, 12, 20)
+        last_date = datetime.date(2014, 12, 31)
+
+        csv_data = {
+            '2013-12-31': '2013-12-31,1,2,3,4',
+            '2015-01-01': '2015-01-01,5,6,7,8',
+            }
+        for offset in range(1, 366):
+            day = datetime.date(2014, 1, 1)
+            day += datetime.timedelta(days=offset - 1)
+            day_str = day.isoformat()
+            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
+                                 (day_str, offset, offset, offset))
+
+        csv_data['2014-07-10'] = '2014-07-10,1910000,0,191,1'
+        csv_data['2014-07-20'] = '2014-07-20,2010000,20100,,1'
+
+        aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
+                                     first_date, last_date)
+
+        self.assert_file_content_equals(enwiki_file_abs, [
+            '2014,667950000,6660400,66776,365',
+            ])
