@@ -580,9 +580,7 @@ def _get_validity_issues_for_aggregated_projectcounts_generic(
 
             if len(lines):
                 # Analyze last line
-                last_line = (lines[-1]).split('\n', 1)[0]  # Since the file is
-                # opened in text mode by default, line ends are normalized to
-                # LF, event though CRLF gets written.
+                last_line = (lines[-1]).rstrip('\n\r')
                 last_line_split = last_line.split(',')
                 if len(last_line_split) == 5:
                     # Check if last line is current.
