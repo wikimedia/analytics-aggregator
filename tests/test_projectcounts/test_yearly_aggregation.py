@@ -43,14 +43,14 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
 
         aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                      first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2014,667950000,6679500,66795,365',
+            '2014,6746660,6679500,66795,365',
             ])
 
     def test_yearly_csv_non_existing_csv_366_day_year(self):
@@ -67,14 +67,14 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2012, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
 
         aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                      first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2012,669775000,6697750,66977,365',
+            '2012,6765092,6697750,66977,365',
             ])
 
     def test_yearly_csv_existing_csv_existing_year(self):
@@ -96,8 +96,8 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
 
         aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                      first_date, last_date)
@@ -127,8 +127,8 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
 
         aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                      first_date, last_date,
@@ -136,7 +136,7 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         self.assert_file_content_equals(enwiki_file_abs, [
             '2013,1,2,3,4',
-            '2014,667950000,6679500,66795,365',
+            '2014,6746660,6679500,66795,365',
             '2015,8,9,10,11',
             ])
 
@@ -159,8 +159,8 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
 
         bad_dates = [
             datetime.date(2014, 7, 3),
@@ -172,7 +172,7 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         self.assert_file_content_equals(enwiki_file_abs, [
             '2013,1,2,3,4',
-            '2014,667919834,6679198,66791,365',
+            '2014,6746354,6679198,66791,365',
             '2015,8,9,10,11',
             ])
 
@@ -195,8 +195,8 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
 
         bad_dates = [
             datetime.date(2014, 7, 3),
@@ -209,7 +209,7 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         self.assert_file_content_equals(enwiki_file_abs, [
             '2013,1,2,3,4',
-            '2014,666084668,6660846,66608,365',
+            '2014,6727819,6660846,66608,365',
             '2015,8,9,10,11',
             ])
 
@@ -233,8 +233,8 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
             bad_dates.append(day)
 
         aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
@@ -266,8 +266,8 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset * 101 + 1, offset, offset))
             bad_dates.append(day)
 
         aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
@@ -292,15 +292,15 @@ class YearlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             day = datetime.date(2014, 1, 1)
             day += datetime.timedelta(days=offset - 1)
             day_str = day.isoformat()
-            csv_data[day_str] = ('%s,%d0000,%d00,%d,1' %
-                                 (day_str, offset, offset, offset))
+            csv_data[day_str] = ('%s,%d,%d00,%d,1' %
+                                 (day_str, offset*101 + 1, offset, offset))
 
-        csv_data['2014-07-10'] = '2014-07-10,1910000,0,191,1'
-        csv_data['2014-07-20'] = '2014-07-20,2010000,20100,,1'
+        csv_data['2014-07-10'] = '2014-07-10,19101,0,191,1'
+        csv_data['2014-07-20'] = '2014-07-20,20101,20100,,1'
 
         aggregator.update_yearly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                      first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2014,667950000,6660400,66776,365',
+            '2014,6727541,6660400,66776,365',
             ])

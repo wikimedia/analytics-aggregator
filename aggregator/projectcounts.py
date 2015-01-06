@@ -195,6 +195,13 @@ def rescale_counts(csv_data, dates, bad_dates, rescale_to):
     Each column is rescaled separatedly.
     Missing columns for good dates are not assumed to be 0.
 
+    The first column is ignored, and assumed to hold the date for the reading.
+
+    The second column is assumed to hold the sum of the remaining
+    columns. This column is not rescaled, but the recomputed by
+    summing the other rescaled columns. Thereby, we can guarantee that
+    the "total sum" always is the sum of the other columns.
+
     Upon other errors, a RuntimeError is raised.
 
     The rescaled counts are returned as list of integers.
@@ -215,7 +222,20 @@ def rescale_counts(csv_data, dates, bad_dates, rescale_to):
             csv_line_items = csv_data[date_str].split(',')
         except KeyError:
             raise RuntimeError("No data for '%s'" % (date_str))
-        del csv_line_items[0]  # getting rid of date column
+
+        # Getting rid if date column. No need to aggregate date columns.
+        del csv_line_items[0]
+
+        # Getting rid of the "total sum" column.
+        # We always want the "total sum" column to be the sum of the
+        # other columns in the row. Hence, we cannot simply rescale
+        # the "total sum" column from the other rows, as that would on
+        # the one hand give rounding artifacts, and on the other hand
+        # would not work if some row is missing values for some
+        # columns. Therefore, we don't rescale the "total sum" column,
+        # but recompute it after the other columns' rescaled value is
+        # known.
+        del csv_line_items[0]
 
         if ret is None:
             ret = []
@@ -243,6 +263,9 @@ def rescale_counts(csv_data, dates, bad_dates, rescale_to):
         ret = [(ret[i] * rescale_to) / aggregations[i] if aggregations[i]
                else None
                for i in range(columns)]
+
+        # Then recompute the "total sum" column and prepend it.
+        ret.insert(0, sum([0 if i is None else i for i in ret]))
     return ret
 
 

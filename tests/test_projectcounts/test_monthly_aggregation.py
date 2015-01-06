@@ -40,14 +40,14 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-08-01': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 32):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                       first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2014-07,4800000,48000,480,30',
+            '2014-07,48510,48000,480,30',
             ])
 
     def test_monthly_csv_non_existing_csv_30_day_month(self):
@@ -61,14 +61,14 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-07-01': '2014-07-01,5,6,7,8',
             }
         for day in range(1, 31):
-            csv_data['2014-06-%02d' % day] = ('2014-06-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-06-%02d' % day] = ('2014-06-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                       first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2014-06,4650000,46500,465,30',
+            '2014-06,46995,46500,465,30',
             ])
 
     def test_monthly_csv_non_existing_csv_29_day_month(self):
@@ -82,14 +82,14 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2012-03-01': '2012-03-01,5,6,7,8',
             }
         for day in range(1, 30):
-            csv_data['2012-02-%02d' % day] = ('2012-02-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2012-02-%02d' % day] = ('2012-02-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                       first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2012-02,4500000,45000,450,30',
+            '2012-02,45480,45000,450,30',
             ])
 
     def test_monthly_csv_non_existing_csv_28_day_month(self):
@@ -103,14 +103,14 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-03-01': '2014-03-01,5,6,7,8',
             }
         for day in range(1, 30):
-            csv_data['2014-02-%02d' % day] = ('2014-02-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-02-%02d' % day] = ('2014-02-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                       first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2014-02,4350000,43500,435,30',
+            '2014-02,43965,43500,435,30',
             ])
 
     def test_monthly_csv_existing_csv_existing_month(self):
@@ -129,8 +129,8 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-08-01': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 32):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                       first_date, last_date)
@@ -157,8 +157,8 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-08-01': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 32):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                       first_date, last_date,
@@ -166,7 +166,7 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         self.assert_file_content_equals(enwiki_file_abs, [
             '2014-06,1,2,3,4',
-            '2014-07,4800000,48000,480,30',
+            '2014-07,48510,48000,480,30',
             '2014-08,8,9,10,11',
             ])
 
@@ -186,8 +186,8 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-08-01': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 32):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         bad_dates = [
             datetime.date(2014, 7, 3),
@@ -199,7 +199,7 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         self.assert_file_content_equals(enwiki_file_abs, [
             '2014-06,1,2,3,4',
-            '2014-07,5058620,50586,505,30',
+            '2014-07,51121,50586,505,30',
             '2014-08,8,9,10,11',
             ])
 
@@ -219,8 +219,8 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-07-31': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 31):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         bad_dates = [
             datetime.date(2014, 7, 3),
@@ -233,7 +233,7 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
 
         self.assert_file_content_equals(enwiki_file_abs, [
             '2014-06,1,2,3,4',
-            '2014-07,4907142,49071,490,30',
+            '2014-07,49591,49071,490,30',
             '2014-08,8,9,10,11',
             ])
 
@@ -252,8 +252,8 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-08-01': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 32):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         bad_dates = [datetime.date(2014, 7, day) for day in range(1, 32)]
 
@@ -281,8 +281,8 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-08-01': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 32):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
         bad_dates = [datetime.date(2014, 7, day) for day in range(1, 32)]
 
@@ -305,15 +305,15 @@ class MonthlyProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-08-01': '2014-08-01,5,6,7,8',
             }
         for day in range(1, 32):
-            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d0000,%d00,%d,1'
-                                              % (day, day, day, day))
+            csv_data['2014-07-%02d' % day] = ('2014-07-%02d,%d,%d00,%d,1'
+                                              % (day, day * 101 + 1, day, day))
 
-        csv_data['2014-07-10'] = '2014-07-10,100000,0,10,1'
-        csv_data['2014-07-20'] = '2014-07-20,200000,2000,,1'
+        csv_data['2014-07-10'] = '2014-07-10,11,0,10,1'
+        csv_data['2014-07-20'] = '2014-07-20,2001,2000,,1'
 
         aggregator.update_monthly_csv(self.data_dir_abs, 'enwiki', csv_data,
                                       first_date, last_date)
 
         self.assert_file_content_equals(enwiki_file_abs, [
-            '2014-07,4800000,47032,476,30',
+            '2014-07,47538,47032,476,30',
             ])
