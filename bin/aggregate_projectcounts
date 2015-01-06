@@ -24,7 +24,8 @@ Options:
     -h, --help               Show this help message and exit.
 
     --source SOURCE_DIR      Read hourly projectcount files from SOURCE_DIR.
-                             [default: /mnt/hdfs/wmf/data/archive/webstats]
+                             [default: \
+/mnt/hdfs/wmf/data/archive/pagecounts-all-sites]
     --target TARGET_DIR      Write daily aggregated CSV files into TARGET_DIR.
                              For each wiki that has a (maybe still empty) csv
                              with the corresponding database name in
