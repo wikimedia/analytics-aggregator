@@ -350,7 +350,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
         dates = [datetime.date(2014, 8, 3)]
 
         csv_data = {
-            '2014-08-03': '2014-08-03,1,2,3'
+            '2014-08-03': '2014-08-03,3,2,1'
         }
 
         bad_dates = []
@@ -361,7 +361,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             1)
 
-        self.assertEquals(actual, [1, 2, 3])
+        self.assertEquals(actual, [3, 2, 1])
 
     def test_rescale_counts_more_days(self):
         dates = [
@@ -372,9 +372,9 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,1,2,3',
-            '2014-08-04': '2014-08-04,1000,100,10',
-            '2014-08-05': '2014-08-05,2000,200,20',
-            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-04': '2014-08-04,1110,1000,100,10',
+            '2014-08-05': '2014-08-05,2220,2000,200,20',
+            '2014-08-06': '2014-08-06,3330,3000,300,30',
             '2014-08-07': '2014-08-07,1,2,3',
         }
 
@@ -386,7 +386,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             3)
 
-        self.assertEquals(actual, [6000, 600, 60])
+        self.assertEquals(actual, [6660, 6000, 600, 60])
 
     def test_rescale_counts_more_days_downscale_int(self):
         dates = [
@@ -397,9 +397,9 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,1,2,3',
-            '2014-08-04': '2014-08-04,1000,100,10',
-            '2014-08-05': '2014-08-05,2000,200,20',
-            '2014-08-06': '2014-08-06,3002,301,31',
+            '2014-08-04': '2014-08-04,1110,1000,100,10',
+            '2014-08-05': '2014-08-05,2220,2000,200,20',
+            '2014-08-06': '2014-08-06,3334,3002,301,31',
             '2014-08-07': '2014-08-07,1,2,3',
         }
 
@@ -411,7 +411,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             1)
 
-        self.assertEquals(actual, [2000, 200, 20])
+        self.assertEquals(actual, [2220, 2000, 200, 20])
 
     def test_rescale_counts_more_days_upscale(self):
         dates = [
@@ -422,9 +422,9 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,1,2,3',
-            '2014-08-04': '2014-08-04,1000,100,10',
-            '2014-08-05': '2014-08-05,2000,200,20',
-            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-04': '2014-08-04,1110,1000,100,10',
+            '2014-08-05': '2014-08-05,2220,2000,200,20',
+            '2014-08-06': '2014-08-06,3330,3000,300,30',
             '2014-08-07': '2014-08-07,1,2,3',
         }
 
@@ -436,7 +436,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             5)
 
-        self.assertEquals(actual, [10000, 1000, 100])
+        self.assertEquals(actual, [11100, 10000, 1000, 100])
 
     def test_rescale_counts_more_days_bad_dates_middle(self):
         dates = [
@@ -447,9 +447,9 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,1,2,3',
-            '2014-08-04': '2014-08-04,1000,100,10',
-            '2014-08-05': '2014-08-05,2000,200,20',
-            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-04': '2014-08-04,1110,1000,100,10',
+            '2014-08-05': '2014-08-05,2220,2000,200,20',
+            '2014-08-06': '2014-08-06,3330,3000,300,30',
             '2014-08-07': '2014-08-07,1,2,3',
         }
 
@@ -463,7 +463,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             5)
 
-        self.assertEquals(actual, [10000, 1000, 100])
+        self.assertEquals(actual, [11100, 10000, 1000, 100])
 
     def test_rescale_counts_more_days_bad_dates_borders(self):
         dates = [
@@ -474,9 +474,9 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,1,2,3',
-            '2014-08-04': '2014-08-04,1000,100,10',
-            '2014-08-05': '2014-08-05,2000,200,20',
-            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-04': '2014-08-04,1110,1000,100,10',
+            '2014-08-05': '2014-08-05,2220,2000,200,20',
+            '2014-08-06': '2014-08-06,3330,3000,300,30',
             '2014-08-07': '2014-08-07,1,2,3',
         }
 
@@ -491,7 +491,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             5)
 
-        self.assertEquals(actual, [10000, 1000, 100])
+        self.assertEquals(actual, [11100, 10000, 1000, 100])
 
     def test_rescale_counts_more_days_bad_dates_skew(self):
         dates = [
@@ -502,9 +502,9 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,1,2,3',
-            '2014-08-04': '2014-08-04,1000,100,10',
-            '2014-08-05': '2014-08-05,2000,200,20',
-            '2014-08-06': '2014-08-06,3000,300,30',
+            '2014-08-04': '2014-08-04,1110,1000,100,10',
+            '2014-08-05': '2014-08-05,2220,2000,200,20',
+            '2014-08-06': '2014-08-06,3330,3000,300,30',
             '2014-08-07': '2014-08-07,1,2,3',
         }
 
@@ -519,7 +519,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             5)
 
-        self.assertEquals(actual, [5000, 500, 50])
+        self.assertEquals(actual, [5550, 5000, 500, 50])
 
     def test_rescale_counts_only_bad_dates(self):
         dates = [
@@ -586,10 +586,10 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,100',
-            '2014-08-04': '2014-08-04,0,3,5,0,7,10,',
-            '2014-08-05': '2014-08-05,1,,  ,0,8,  ,',
-            '2014-08-06': '2014-08-06,2,4,6,0,9,0 ,',
-            '2014-08-07': '2014-08-07,11,12,13,14,15,16,17',
+            '2014-08-04': '2014-08-04,18,0,3,5,0,7,10,',
+            '2014-08-05': '2014-08-05,9,1,,  ,0,8,  ,',
+            '2014-08-06': '2014-08-06,21,2,4,6,0,9,0 ,',
+            '2014-08-07': '2014-08-07,98,11,12,13,14,15,16,17',
         }
 
         bad_dates = []
@@ -600,7 +600,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             3)
 
-        self.assertEquals(actual, [3, 10, 16, 0, 24, 15, None])
+        self.assertEquals(actual, [68, 3, 10, 16, 0, 24, 15, None])
 
     def test_rescale_counts_zero_and_empty_columns_upscale(self):
         dates = [
@@ -611,10 +611,10 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,100',
-            '2014-08-04': '2014-08-04,0,3,5,0, , ,10,',
-            '2014-08-05': '2014-08-05,1,,  ,0,0,8,  ,',
-            '2014-08-06': '2014-08-06,2,4,6,0, ,9,0 ,',
-            '2014-08-07': '2014-08-07,11,12,13,14,15,16,17',
+            '2014-08-04': '2014-08-04,18,0,3,5,0, , ,10,',
+            '2014-08-05': '2014-08-05,9,1,,  ,0,0,8,  ,',
+            '2014-08-06': '2014-08-06,21,2,4,6,0, ,9,0 ,',
+            '2014-08-07': '2014-08-07,98,11,12,13,14,15,16,17',
         }
 
         bad_dates = []
@@ -625,7 +625,7 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             4)
 
-        self.assertEquals(actual, [4, 14, 22, 0, 0, 34, 20, None])
+        self.assertEquals(actual, [94, 4, 14, 22, 0, 0, 34, 20, None])
 
     def test_rescale_counts_shorter_second_column(self):
         dates = [
@@ -636,9 +636,9 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
 
         csv_data = {
             '2014-08-03': '2014-08-03,100,200',
-            '2014-08-04': '2014-08-04,1,2',
-            '2014-08-05': '2014-08-05,3',
-            '2014-08-06': '2014-08-06,4,,',
+            '2014-08-04': '2014-08-04,3,1,2',
+            '2014-08-05': '2014-08-05,3,3',
+            '2014-08-06': '2014-08-06,4,4,,',
             '2014-08-07': '2014-08-07,300,400',
         }
 
@@ -650,4 +650,21 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             bad_dates,
             4)
 
-        self.assertEquals(actual, [10, 8, None])
+        self.assertEquals(actual, [18, 10, 8, None])
+
+    def test_rescale_override_total_column(self):
+        dates = [datetime.date(2014, 8, 3)]
+
+        csv_data = {
+            '2014-08-03': '2014-08-03,1,2,3'
+        }
+
+        bad_dates = []
+
+        actual = aggregator.rescale_counts(
+            csv_data,
+            dates,
+            bad_dates,
+            1)
+
+        self.assertEquals(actual, [5, 2, 3])
