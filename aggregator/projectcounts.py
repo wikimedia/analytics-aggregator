@@ -705,9 +705,7 @@ def get_validity_issues_for_aggregated_projectcounts(data_dir_abs):
         datetime.date.today(),
         util.parse_string_to_date('yesterday')
         ]
-    logging.error(set(date.isoformat() for date in current_dates))
-    for x in set(date.isoformat() for date in current_dates):
-        logging.error(x)
+
     # daily_raw files
     issues.extend(_get_validity_issues_for_aggregated_projectcounts_generic(
         os.path.join(data_dir_abs, 'daily_raw'),
