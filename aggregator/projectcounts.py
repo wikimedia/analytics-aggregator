@@ -465,7 +465,8 @@ def update_yearly_csv(target_dir_abs, dbname, csv_data_input, first_date,
 
 def update_per_project_csvs_for_dates(
         source_dir_abs, target_dir_abs, first_date, last_date,
-        bad_dates=[], additional_aggregators=[], force_recomputation=False):
+        bad_dates=[], additional_aggregators=[], force_recomputation=False,
+        compute_all_projects=False):
     """Updates per project CSVs from hourly projectcounts files.
 
     The existing per project CSV files in the daily_raw subdirectory of
@@ -496,13 +497,23 @@ def update_per_project_csvs_for_dates(
         through. (Default: [])
     :param force_recomputation: If True, recompute data for the given days,
         even if it is already in the CSV. (Default: False)
+    :param compute_all_projects: If True, compute counts for all projects
+        into a file named 'all.csv'.
     """
+    # Contains the aggregation of all data across projects indexed by date.
+    all_projects_data = {}
+
     for csv_file_abs in sorted(glob.glob(os.path.join(
             target_dir_abs, 'daily_raw', '*.csv'))):
-        logging.info("Updating csv '%s'" % (csv_file_abs))
-
         dbname = os.path.basename(csv_file_abs)
         dbname = dbname.rsplit('.csv', 1)[0]
+
+        if dbname == 'all':
+            # 'all.csv' is an aggregation across all projects
+            # and should not be processed.
+            continue
+
+        logging.info("Updating csv '%s'" % (csv_file_abs))
 
         csv_data = util.parse_csv_to_first_column_dict(csv_file_abs)
 
@@ -545,20 +556,71 @@ def update_per_project_csvs_for_dates(
                     count_mobile if date >= DATE_MOBILE_ADDED else None,
                     count_zero if date >= DATE_MOBILE_ADDED else None)
 
-        util.write_dict_values_sorted_to_csv(
-            csv_file_abs,
+        _write_raw_and_aggregated_csv_data(
+            target_dir_abs,
+            dbname,
             csv_data,
-            header=CSV_HEADER)
+            first_date,
+            last_date,
+            additional_aggregators,
+            bad_dates,
+            force_recomputation)
 
-        for additional_aggregator in additional_aggregators:
-            additional_aggregator(
-                target_dir_abs,
-                dbname,
-                csv_data,
-                first_date,
-                last_date,
-                bad_dates=bad_dates,
-                force_recomputation=force_recomputation)
+        # Aggregates values across all projects
+        if compute_all_projects:
+            util.merge_sum_csv_data_dict(all_projects_data, csv_data)
+
+    # Writes aggregations across all projects
+    if compute_all_projects:
+        _write_raw_and_aggregated_csv_data(
+            target_dir_abs,
+            'all',
+            all_projects_data,
+            first_date,
+            last_date,
+            additional_aggregators,
+            bad_dates,
+            force_recomputation)
+
+
+def _write_raw_and_aggregated_csv_data(
+        target_dir_abs, dbname, csv_data, first_date, last_date,
+        additional_aggregators, bad_dates, force_recomputation):
+    """
+    Writes the data passed in the csv_data dict to various destinations:
+
+    1. Writes the raw data (as it comes in the csv_data dict), to:
+       <target_dir_abs>/daily_raw/<dbname>.csv
+
+    2. Uses each aggregator in additional_aggregators to write the data
+       to the aggregator's specific location. Note: Some of this method's
+       parameters are just forwarded to these aggregators.
+
+    :param target_dir_abs: Absolute directory of the per project CSVs.
+    :param dbname: The database name of the wiki to consider (E.g.: 'enwiki')
+    :param csv_data: The dict containing the data to be written.
+    :param first_date: The first date to write non-existing data for.
+    :param last_date: The last date to write non-existing data for.
+    :param additional_aggregators: See update_per_project_csvs_for_dates.
+    :param bad_dates: List of dates considered having bad data.
+    :param force_recomputation: If True, recompute data for the given days.
+    """
+    csv_file_abs = os.path.join(target_dir_abs, 'daily_raw', dbname + '.csv')
+
+    util.write_dict_values_sorted_to_csv(
+        csv_file_abs,
+        csv_data,
+        header=CSV_HEADER)
+
+    for additional_aggregator in additional_aggregators:
+        additional_aggregator(
+            target_dir_abs,
+            dbname,
+            csv_data,
+            first_date,
+            last_date,
+            bad_dates=bad_dates,
+            force_recomputation=force_recomputation)
 
 
 def _get_validity_issues_for_aggregated_projectcounts_generic(

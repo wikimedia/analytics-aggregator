@@ -408,3 +408,60 @@ class FileSystemUtilTestCase(unittest.TestCase):
             "2014-05-12,1,2",
             "2014-05-13,3,4",
             ])
+
+    def test_merge_sum_csv_data_dict_with_empty_add_dict(self):
+        dict_1 = {
+            '2014-01-01': '2014-01-01,6,3,2,1',
+            '2014-01-02': '2014-01-02,9,4,3,2',
+        }
+        dict_2 = {}
+        aggregator.merge_sum_csv_data_dict(dict_1, dict_2)
+        self.assertEqual(dict_1, dict_1)
+
+    def test_merge_sum_csv_data_dict_with_empty_base_dict(self):
+        dict_1 = {}
+        dict_2 = {
+            '2014-01-01': '2014-01-01,6,3,2,1',
+            '2014-01-02': '2014-01-02,9,4,3,2',
+        }
+        aggregator.merge_sum_csv_data_dict(dict_1, dict_2)
+        self.assertEqual(dict_1, dict_2)
+
+    def test_merge_sum_csv_data_dict_with_update(self):
+        dict_1 = {
+            '2014-01-01': '2014-01-01,6,3,2,1',
+            '2014-01-03': '2014-01-03,12,5,4,3',
+        }
+        dict_2 = {
+            '2014-01-01': '2014-01-01,6,2,3,1',
+            '2014-01-02': '2014-01-02,6,4,2,3',
+        }
+        aggregator.merge_sum_csv_data_dict(dict_1, dict_2)
+        expected = {
+            '2014-01-01': '2014-01-01,12,5,5,2',
+            '2014-01-02': '2014-01-02,9,4,2,3',
+            '2014-01-03': '2014-01-03,12,5,4,3',
+        }
+        self.assertEqual(dict_1, expected)
+
+    def test_merge_sum_csv_data_dict_with_wrong_value(self):
+        dict_1 = {}
+        dict_2 = {
+            '2014-01-01': 'wrong value',
+        }
+        nose.tools.assert_raises(
+            ValueError,
+            aggregator.merge_sum_csv_data_dict,
+            dict_1,
+            dict_2)
+
+    def test_merge_sum_csv_data_dict_with_non_integers(self):
+        dict_1 = {}
+        dict_2 = {
+            '2014-01-01': '2014-01-01,not,an,integer,value',
+        }
+        nose.tools.assert_raises(
+            ValueError,
+            aggregator.merge_sum_csv_data_dict,
+            dict_1,
+            dict_2)

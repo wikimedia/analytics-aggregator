@@ -21,6 +21,7 @@
 
 import datetime
 import os
+from operator import add
 
 WEBSTATSCOLLECTOR_WHITELISTED_WIKIMEDIA_WIKIS = [
     'commons',
@@ -205,3 +206,35 @@ def update_csv_data_dict(csv_data, first_column, *other_columns):
         line += ',%s' % ('' if column is None else column)
     csv_data[first_column] = line
     return csv_data
+
+
+def merge_sum_csv_data_dict(csv_data_1, csv_data_2):
+    """
+    Merge csv_data_2 into csv_data_1, accumulating values by date.
+
+    The two dicts have to be of the form dict<key: str, value: str>
+    and their value format should be 'date,int,int,int,int'.
+    If any of those is incorrect, a ValueError is raised.
+
+    The merged values will be the cross sum of all integer operators,
+    with the exception of the first integer column, that will hold
+    the sum of the other integer columns:
+    'date,int1a,int1b,int1c,int1d' + 'date,int2a,int2b,int2c,int2d' =
+    'date,<sumOfTheOtherInts>,int1b+int2b,int1c+int2c,int1d+int2d'
+    Note that the values are aggregated by date.
+
+    :param csv_data_1: The data dict to be merged on.
+    :param csv_data_2: The data dict to be added from.
+    """
+    parse = lambda vs: [int(v.strip()) for v in vs.split(',')[2:5]]
+    build = lambda d, vs: ','.join([d, str(sum(vs))] + [str(v) for v in vs])
+
+    for date in csv_data_2:
+
+        value_1 = parse(csv_data_1[date]) if date in csv_data_1 else [0, 0, 0]
+        value_2 = parse(csv_data_2[date])
+        if len(value_1) != 3 or len(value_2) != 3:
+            raise ValueError('Cannot parse CSV data dict value.')
+
+        summed_value = map(add, value_1, value_2)
+        csv_data_1[date] = build(date, summed_value)

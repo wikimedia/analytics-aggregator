@@ -18,7 +18,8 @@ Aggregates Wikimedia's hourly projectcount files into per project CSVs
 
 Usage: aggregate_projectcounts [--source SOURCE_DIR] [--target TARGET_DIR]
            [--first-date FIRST_DATE] [--last-date LAST_DATE] [--date DATE]
-           [--log LOG_FILE] [--force] [--push-target] [-v ...] [--help]
+           [--log LOG_FILE] [--force] [--all-projects] [--push-target]
+           [-v ...] [--help]
 
 Options:
     -h, --help               Show this help message and exit.
@@ -45,6 +46,8 @@ Options:
                              --last-date)
     --force                  Force recomputation of given days, even if the CSV
                              would already contain that data.
+    --all-projects           Compute aggregation across projects into a file
+                             named 'all.csv'.
     --push-target            Assumes the target directory is a git repository,
                              and automatically hard reset it before the
                              aggregation, and commit and push after the
@@ -180,6 +183,7 @@ if __name__ == '__main__':
                       (first_date, last_date))
 
     force_recomputation = arguments['--force']
+    compute_all_projects = arguments['--all-projects']
 
     if not all_parameters_ok:
         logging.error("Parameters could not get parsed")
@@ -211,7 +215,8 @@ if __name__ == '__main__':
         last_date,
         bad_dates=bad_dates,
         additional_aggregators=additional_aggregators,
-        force_recomputation=force_recomputation
+        force_recomputation=force_recomputation,
+        compute_all_projects=compute_all_projects
     )
 
     if arguments["--push-target"]:
