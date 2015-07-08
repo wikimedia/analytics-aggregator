@@ -47,7 +47,9 @@ Options:
     --force                  Force recomputation of given days, even if the CSV
                              would already contain that data.
     --all-projects           Compute aggregation across projects into a file
-                             named 'all.csv'.
+                             named 'all.csv'. Note that the aggregates will be
+                             computed for all dates already in CSVs, regardless
+                             of --first-date, --last-date or --date parameters.
     --push-target            Assumes the target directory is a git repository,
                              and automatically hard reset it before the
                              aggregation, and commit and push after the
