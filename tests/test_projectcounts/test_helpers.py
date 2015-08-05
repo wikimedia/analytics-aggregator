@@ -668,3 +668,20 @@ class BasicTestCase(testcases.ProjectcountsTestCase):
             1)
 
         self.assertEquals(actual, [5, 2, 3])
+
+    def test_get_daily_count_wrong_lines_2014_11_01(self):
+        fixture = self.get_fixture_dir_abs('2014-11-wrong-lines')
+
+        date = datetime.date(2014, 11, 1)
+
+        actual = aggregator.get_daily_count(fixture, 'en', date,
+                                            allow_bad_data=False)
+
+        # Each hour is 100 + the hour itself. Wrong line is in hour 01.
+        # we're expecting 24*100 + 23*12 = 2676
+        self.assertEquals(actual, 2676)
+
+        # Kept in case we want to revert to raising an exception.
+        # nose.tools.assert_raises(RuntimeError,
+        #                         aggregator.get_daily_count,
+        #                         fixture, 'en', date, allow_bad_data=False)

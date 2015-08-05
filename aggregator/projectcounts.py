@@ -93,14 +93,17 @@ def aggregate_for_date(source_dir_abs, date, allow_bad_data=False):
                 fields = line.split(' ')
 
                 if len(fields) != 4:
-                    raise RuntimeError("Malformed line in '%s'" % (
-                        hourly_file))
+                    logging.warn("File %s as an incorrect line: %s" % (
+                        hourly_file_abs, line))
+                    # Kept in case we want to get back to raising an error
+                    # raise RuntimeError("Malformed line in '%s'" % (
+                    #    hourly_file))
+                else:
+                    abbreviation = fields[0].lower()
+                    count = int(fields[2])
 
-                abbreviation = fields[0].lower()
-                count = int(fields[2])
-
-                daily_data[abbreviation] = daily_data.get(abbreviation, 0) \
-                    + count
+                    daily_data[abbreviation] = daily_data.get(abbreviation, 0) \
+                        + count
 
     return daily_data
 
