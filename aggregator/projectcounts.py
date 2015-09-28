@@ -575,12 +575,14 @@ def update_per_project_csvs_for_dates(
 
     # Writes aggregations across all projects
     if compute_all_projects:
+        oldest_date = util.parse_string_to_date(min(all_projects_data.keys()))
+        newest_date = util.parse_string_to_date(max(all_projects_data.keys()))
         _write_raw_and_aggregated_csv_data(
             target_dir_abs,
             'all',
             all_projects_data,
-            first_date,
-            last_date,
+            oldest_date,
+            newest_date,
             additional_aggregators,
             bad_dates,
             force_recomputation)

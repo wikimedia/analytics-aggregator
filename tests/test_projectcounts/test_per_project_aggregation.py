@@ -366,3 +366,44 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             '2014-11-02,321,321,0,0',
             '2014-11-03,310,310,0,0',
             ])
+
+    def test_update_per_project_compute_all_projects_outside_range(self):
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3projects-for-aggregation')
+
+        # ask to just compute day 3
+        first_date = datetime.date(2014, 11, 3)
+        last_date = datetime.date(2014, 11, 3)
+
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
+        dewiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'dewiki.csv')
+        frwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'frwiki.csv')
+        # however, files already contain counts for the other days
+        self.create_file(enwiki_file_abs, [
+            '2014-11-01,103,103,0,0',
+            '2014-11-02,108,108,0,0'
+        ])
+        self.create_file(dewiki_file_abs, [
+            '2014-11-01,121,121,0,0',
+            '2014-11-02,105,105,0,0'
+        ])
+        self.create_file(frwiki_file_abs, [
+            '2014-11-01,99,99,0,0',
+            '2014-11-02,108,108,0,0'
+        ])
+
+        aggregator.update_per_project_csvs_for_dates(
+            fixture,
+            self.data_dir_abs,
+            first_date,
+            last_date,
+            compute_all_projects=True)
+
+        # although the call was just for the day 3
+        # all dates are calculated for the totals file
+        all_file_abs = os.path.join(self.daily_raw_dir_abs, 'all.csv')
+        self.assert_file_content_equals(all_file_abs, [
+            '2014-11-01,323,323,0,0',
+            '2014-11-02,321,321,0,0',
+            '2014-11-03,310,310,0,0',
+            ])
