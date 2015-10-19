@@ -54,6 +54,8 @@ Options:
                              and automatically hard reset it before the
                              aggregation, and commit and push after the
                              aggregation.
+    --output-projectviews    Name the output files projectviews instead of
+                             projectcounts.
     --log LOG_FILE           In addition to stdout, also log to LOG_FILE
 
     -v, --verbose            Increase verbosity
@@ -186,6 +188,7 @@ if __name__ == '__main__':
 
     force_recomputation = arguments['--force']
     compute_all_projects = arguments['--all-projects']
+    output_projectviews = arguments['--output-projectviews']
 
     if not all_parameters_ok:
         logging.error("Parameters could not get parsed")
@@ -218,7 +221,8 @@ if __name__ == '__main__':
         bad_dates=bad_dates,
         additional_aggregators=additional_aggregators,
         force_recomputation=force_recomputation,
-        compute_all_projects=compute_all_projects
+        compute_all_projects=compute_all_projects,
+        output_projectviews=output_projectviews,
     )
 
     if arguments["--push-target"]:

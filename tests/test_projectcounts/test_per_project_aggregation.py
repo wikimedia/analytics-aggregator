@@ -339,6 +339,55 @@ class ProjectAggregationTestCase(testcases.ProjectcountsDataTestCase):
             True
             ]])
 
+    def test_update_per_project_additional_aggregators_using_projectview(self):
+        fixture = self.get_fixture_dir_abs(
+            '2014-11-3days-enwiki-day-times-100-plus-hour-projectviews')
+
+        first_date = datetime.date(2014, 11, 1)
+        last_date = datetime.date(2014, 11, 3)
+
+        # Mock an additional aggregator
+        funcMockParams = []
+
+        def funcMock(target_dir_abs, dbname, csv_data_input, first_date,
+                     last_date, bad_dates, force_recomputation):
+            funcMockParams.append([
+                target_dir_abs, dbname, csv_data_input, first_date, last_date,
+                bad_dates, force_recomputation
+                ])
+
+        enwiki_file_abs = os.path.join(self.daily_raw_dir_abs, 'enwiki.csv')
+        self.create_empty_file(enwiki_file_abs)
+
+        aggregator.update_per_project_csvs_for_dates(
+            fixture,
+            self.data_dir_abs,
+            first_date,
+            last_date,
+            additional_aggregators=[funcMock],
+            output_projectviews=True)
+
+        self.assert_file_content_equals(enwiki_file_abs, [
+            '2014-11-01,24277,24277,0,0',
+            '2014-11-02,48277,48277,0,0',
+            '2014-11-03,72277,72277,0,0',
+            ])
+
+        # Checking calls to additional aggregators
+        self.assertEquals(funcMockParams, [[
+            self.data_dir_abs,
+            'enwiki',
+            {
+                '2014-11-01': '2014-11-01,24277,24277,0,0',
+                '2014-11-02': '2014-11-02,48277,48277,0,0',
+                '2014-11-03': '2014-11-03,72277,72277,0,0'
+                },
+            first_date,
+            last_date,
+            [],
+            False
+            ]])
+
     def test_update_per_project_compute_all_projects(self):
         fixture = self.get_fixture_dir_abs(
             '2014-11-3projects-for-aggregation')

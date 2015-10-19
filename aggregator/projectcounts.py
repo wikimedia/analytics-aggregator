@@ -28,6 +28,8 @@ import os
 import glob
 import util
 
+PROJECTVIEWS_STRFTIME_PATTERN = ('%%Y%s%%Y-%%m%sprojectviews-%%Y%%m%%d-'
+                                 '%%H0000' % (os.sep, os.sep))
 PROJECTCOUNTS_STRFTIME_PATTERN = ('%%Y%s%%Y-%%m%sprojectcounts-%%Y%%m%%d-'
                                   '%%H0000' % (os.sep, os.sep))
 
@@ -44,7 +46,10 @@ def clear_cache():
     cache = {}
 
 
-def aggregate_for_date(source_dir_abs, date, allow_bad_data=False):
+def aggregate_for_date(
+        source_dir_abs, date,
+        allow_bad_data=False, output_projectviews=False):
+
     """Aggregates hourly projectcounts for a given day.
 
     This function does not attempt to cache the aggregated data. Either cache
@@ -62,8 +67,14 @@ def aggregate_for_date(source_dir_abs, date, allow_bad_data=False):
     :param date: The date to get the count for.
     :param allow_bad_data: If True, do not bail out, if some data is
         bad or missing. (Default: False)
+    :param output_projectviews: If True, name the output files projectviews
+        instead of projectcounts. (Default: False)
     """
     daily_data = {}
+    if output_projectviews:
+        output_format = PROJECTVIEWS_STRFTIME_PATTERN
+    else:
+        output_format = PROJECTCOUNTS_STRFTIME_PATTERN
 
     for hour in range(24):
         # Initialize with the relevant hour start ...
@@ -75,7 +86,7 @@ def aggregate_for_date(source_dir_abs, date, allow_bad_data=False):
 
         hourly_file_abs = os.path.join(
             source_dir_abs,
-            hourly_file_datetime.strftime(PROJECTCOUNTS_STRFTIME_PATTERN))
+            hourly_file_datetime.strftime(output_format))
 
         if not os.path.isfile(hourly_file_abs):
             if allow_bad_data:
@@ -109,7 +120,7 @@ def aggregate_for_date(source_dir_abs, date, allow_bad_data=False):
 
 
 def get_daily_count(source_dir_abs, webstatscollector_abbreviation, date,
-                    allow_bad_data=False):
+                    allow_bad_data=False, output_projectviews=False):
     """Obtains the daily count for a webstatscollector abbreviation.
 
     Data gets cached upon read. For a day, the data is <50KB, so having many
@@ -122,6 +133,8 @@ def get_daily_count(source_dir_abs, webstatscollector_abbreviation, date,
     :param date: The date to get the count for.
     :param allow_bad_data: If True, do not bail out, if some data is
         bad or missing. (Default: False)
+    :param output_projectviews: If True, name the output files projectviews
+        instead of projectcounts. (Default: False)
     """
     global cache
     try:
@@ -133,7 +146,9 @@ def get_daily_count(source_dir_abs, webstatscollector_abbreviation, date,
     try:
         date_data = source_dir_cache[date]
     except KeyError:
-        date_data = aggregate_for_date(source_dir_abs, date, allow_bad_data)
+        date_data = aggregate_for_date(
+            source_dir_abs, date, allow_bad_data, output_projectviews
+        )
         source_dir_cache[date] = date_data
 
     return date_data.get(webstatscollector_abbreviation, 0)
@@ -469,7 +484,7 @@ def update_yearly_csv(target_dir_abs, dbname, csv_data_input, first_date,
 def update_per_project_csvs_for_dates(
         source_dir_abs, target_dir_abs, first_date, last_date,
         bad_dates=[], additional_aggregators=[], force_recomputation=False,
-        compute_all_projects=False):
+        compute_all_projects=False, output_projectviews=False):
     """Updates per project CSVs from hourly projectcounts files.
 
     The existing per project CSV files in the daily_raw subdirectory of
@@ -502,6 +517,8 @@ def update_per_project_csvs_for_dates(
         even if it is already in the CSV. (Default: False)
     :param compute_all_projects: If True, compute counts for all projects
         into a file named 'all.csv'.
+    :param output_projectviews: If True, name the output files projectviews
+        instead of projectcounts. (Default: False)
     """
     # Contains the aggregation of all data across projects indexed by date.
     all_projects_data = {}
@@ -532,19 +549,25 @@ def update_per_project_csvs_for_dates(
                 abbreviation = util.dbname_to_webstatscollector_abbreviation(
                     dbname, 'desktop')
                 count_desktop = get_daily_count(
-                    source_dir_abs, abbreviation, date, allow_bad_data)
+                    source_dir_abs, abbreviation, date,
+                    allow_bad_data, output_projectviews,
+                )
 
                 # mobile site
                 abbreviation = util.dbname_to_webstatscollector_abbreviation(
                     dbname, 'mobile')
                 count_mobile = get_daily_count(
-                    source_dir_abs, abbreviation, date, allow_bad_data)
+                    source_dir_abs, abbreviation, date,
+                    allow_bad_data, output_projectviews,
+                )
 
                 # zero site
                 abbreviation = util.dbname_to_webstatscollector_abbreviation(
                     dbname, 'zero')
                 count_zero = get_daily_count(
-                    source_dir_abs, abbreviation, date, allow_bad_data)
+                    source_dir_abs, abbreviation, date,
+                    allow_bad_data, output_projectviews,
+                )
 
                 count_total = count_desktop
                 if date >= DATE_MOBILE_ADDED:
