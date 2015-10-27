@@ -19,7 +19,7 @@ Aggregates Wikimedia's hourly projectcount files into per project CSVs
 Usage: aggregate_projectcounts [--source SOURCE_DIR] [--target TARGET_DIR]
            [--first-date FIRST_DATE] [--last-date LAST_DATE] [--date DATE]
            [--log LOG_FILE] [--force] [--all-projects] [--push-target]
-           [-v ...] [--help]
+           [--output-projectviews] [-v ...] [--help]
 
 Options:
     -h, --help               Show this help message and exit.
